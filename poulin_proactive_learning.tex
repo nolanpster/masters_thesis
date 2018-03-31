@@ -194,8 +194,20 @@ Professor Jing Xiao, Head of Department
 % Fortunately, LaTeX has thought of that, so it's very easy:
 %
 \begin{abstract}
-This paper is the most important paper I have ever written. Therefore,
-everyone should read it, like it, and recommend it to all his friends.
+    This thesis develops novel proactive policy inference algorithms to be used in multi-agent Markov Decision Processes
+    with hidden parameters (mention bonus reward here if I get it to work). A controllable agent must perform path
+    planning to maximize its reward, but the uncontrollable agent's policy is unknown. The controllable agent can
+    improve the likelihood of a reward by correctly inferring uncontrollable agent's policy, but the actions that
+    provide the most information for inference decrease the chance of reward. By balancing exploration and exploitation,
+    the controllable agent improves the likelihood of a reward as it builds up a history of interactions with
+    uncontrollable agent. The policy of the uncontrollable agent is modeled as a Softmax policy, and its Q-function is
+    approximated using a linear combination of basis-functions and a parameter vector. Assuming that the the optimal
+    parameter vector is the mean value of a multivariate-normal distribution, the uncontrollable policy is inferred by
+    performing gradient ascent that maximizes the log-likelihood of observed data given sampled parameter vectors. This
+    policy parameterization also produces a metric that quantifies which parameters are unknown due to lack of data.
+    When the agents interact, the controllable agent receives a bonus reward for gathering data that was lacking in a
+    previous batch of policy-rollouts, thus accelerating the inference procedure and maximizing the likelihood of reward
+    in the original task.
 \end{abstract}
 
 % From here on, we need Roman page numbers according to the library
@@ -210,7 +222,7 @@ everyone should read it, like it, and recommend it to all his friends.
 	\textbf{Acknowledgements}
 \end{center}
 
-	I would like to express my gratitude to my advisor who made
+	Original template text: I would like to express my gratitude to my advisor who made
 	sure the thesis has at least 120 pages, 200 pictures and lots
 	of formulae and thus made me master \LaTeX{} like my native
 	language.
