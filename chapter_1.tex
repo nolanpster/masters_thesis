@@ -5,92 +5,62 @@
 % 1.1.1, subsubsections don't get numbers. (You can change that, if
 % you want them to be called 1.1.1.1)
 %
-\chapter{First Chapter.}
-This should ideally contain some text. Let's define a \ac{MDP}, \ac{DRA}, \ac{LTL}, \ac{SGA}, \ac{MLE}, \ac{OGK}, \ac{GGK}, \ac{KL}-divergence, \ac{SP}
-\section{First Section.}
-More Text.
-\subsection[Alternative title for the Table of Contents]{First Subsection.}
-Even more text, maybe a formula:
-\begin{equation}
-\sum_{i=1}^{n}i=\frac{n(n+1)}{2} % much easier than Microsoft Equation
-                                 % Editor :)
-\end{equation}
-\subsubsection{First Sub-subsection.}
-This is really deep down in the hierarchy. Maybe you shouldn't even
-use sub\-subsections. It goes further down (paragraphs), but I don't
-think you'll need that\footnote{By the way: notice that, although we
-have doublespacing here, the footnotes are singlespaced. This is
-intended and good. If you want to change that, try, but this is really
-how it should be.}.
+\chapter{Motivation for Proactive Policy Inference}\label{chapt:motivation}
 
-\section{Other thoughts.}
-Okay, what else?
-Let me quickly put a figure here, maybe a piece of pseudo code.
-That way, you can see how this is done. It's a little painful, but
-looks really cool. We will call it Figure~\ref{fig:source_algo1}. The
-numbering is automatic---don't worry about it.
+%\todo[inline, color=green]{
+%                           Throughout this document, I precede each section with a note about the section. That note
+%                           should explain the goal of the section, e.g., what I'm intending to convey in the section.
+%                           When reviewing, please consider if the section adequately addresses the following points:
+%
+%                           1) Does the section meet the goal I stated.
+%
+%                           2) Is this the correct place in the document for that goal to be fulfilled (\eg, is it too
+%                              early or too late in the document.
+%
+%                           3) If you're reading this, I'm already grateful for your help.
+%                          }
+%
+%\todo[inline]{
+%              My goal in this section is to provide motivation for the problem I have addressed in this thesis. I
+%              introduce a high level example, and then discuss current literature.
+%             }
 
-% Start a figure
-\begin{figure}[htb]
-% We would like to have the whole thing in the center of the page
-\begin{center}
-% We want a frame.
-   \fbox{
-% The figure should autoformat to half the page width
-       \begin{minipage}{0.5\textwidth}
-% Now comes the content.
-% For source code, you have to leave an empty line after each line of
-% code.
-% Note that this is text-mode, that's why all formluae are typeset in
-% math-mode (enclosed in dollar-signs $a+b$)
-% Each line needs a font command a la \texttt{}, \textsc{}, textbf{}
-% You could use \begin{verbatim}\end{verbatim} for source code, but then
-% you can't do any more formatting in you source file. May be appropriate
-% sometimes.
+    A fundamental assumption of this thesis is that when an autonomous agent moves in an environment it is attempting to
+    fulfill a specified task. The agent could be an autonomous vehicle or a robotic manipulator and in a realistic
+    environment there will be static obstacles and other autonomous, uncontrollable, agents. When specifying the main
+    task for the controllable agent, there are often requirements such as \quotationMarks{drive from point A to point B
+    and neither leave the road nor collide with another car or a pedestrian.} Similarly, a manipulator might be tasked
+    to \quotationMarks{pick up everything on the table and put it in the box that the human is holding.} It's clear that
+    accurately representing the probabilistic motion distribution of uncontrollable agents -- cars, pedestrians, or people holding boxes -- will
+    benefit the autonomous agent as it tries to complete its main objective. This thesis details algorithms that elicit
+    the most informative agent interactions that the controllable agent then uses to effectively plan its future
+    actions. This work is built upon both recent and fundamental literature in the \ac{RL} community.
 
-\textsc{Bellman-Ford} $(G,w,s)$
+\todo[inline]{make all graphics '.tif' format for highest quality}
 
-(1) \textsc{Initialize-Single-Source}$(G,s)$
+\section{Current Literature}
+    \todo[inline]{copy literature reviews from my other documents}
+    ** Look through Prof. Fu's work as well as previously cited RL-Books, and papers.
 
-(2) \textbf{for} $i\leftarrow 1$ \textbf{to} $|V[G]|-1$ \textbf{do}
+\subsection{Parameter Uncertainty in MDPs}
+    Literature review of papers detailing parameter estimation in MDPs here.
 
-(3) \T\textbf{for} each edge $(u,v)\in E[G]$
+\subsection{Policy Inference from Observation}
+    Literature review of papers about policy inference in RL.
 
-\T\T\T\textbf{do} \textsc{Relax} $(u,v,w)$
+\subsection{Active Learning}
+    Literature review of papers about active learning.
 
-(4) \textbf{for} each edge $(u,v) \in E[G]$
-
-\T\T \textbf{do if} $d[v]>d[u]+w(u,v)$
-
-\T\T\T \textbf{then return} \textsc{false}
-
-(5) \textbf{return} \textsc{true}
-
-% End of content, closure of minipage, frame, and centering.
-       \end{minipage}
-   }
-\end{center}
-% Caption
-\caption{This is a very simple algorithm in pseudocode.}
-% A label to refer to the figure.
-\label{fig:source_algo1}
-% End of figure
-\end{figure}
-
-\noindent
-And so on, and so on.
-
-Please remember that you have to compile a document several times when
-you did changes that affect figures, table of contents, bibliography,
-etc. (This is always the case if you get the warning: ``LaTeX Warning:
-Label(s) may have changed. Rerun to get cross-references right.'').
-
-The recommended sequence is :
-
-\texttt{latex foo.tex}
-
-\texttt{bibtex foo}
-
-\texttt{latex foo.tex}
-
-\texttt{latex foo.tex}
+\subsection{Novelty of this thesis (better-ize this name)}
+    \todo[inline]{Rewrite as fluid paragraph}
+    \begin{itemize}
+        \item only observing state-action outcomes, (state-sequences) not state-action-sequences.
+        \item less conservative than mini-max, we don't rule out the possiblility that the other agent is actually
+            helping us complete the main objective.
+        \item use novel Gaussian policy approximation for policy inference
+        \item (\textit{hopefully}) provide an exploration bonus reward that accelerates data gathering for the best
+            inference.
+        \item We parameterize the policy using a set of basis functions that reduce the dimensionality of the required
+            inference from $|S|\times|A|$ to $|K|\times|A|$ where $|K|$ is the number of kernels used. Each action at
+            each kernel receives a basis function.
+    \end{itemize}
