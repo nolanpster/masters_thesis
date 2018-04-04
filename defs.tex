@@ -57,6 +57,9 @@
 \newcommand{\symm}{\mathbb{S}}  % symmetric matrices
 \fi
 
+% Additional letters
+\newcommand{\Tau}{\ensuremath{\mathcal{T}}}
+
 % control theory sets
 \ifuseboldmathops
 \newcommand{\HH}{\mathbf{H}}
@@ -196,7 +199,7 @@
 %%%		Symbol notation 				%%%
 \newcommand{\agent}[1]{\ensuremath{\alpha_{#1}}}
 \newcommand{\policy}[1]{\ensuremath{\pi_{#1}}}
-\newcommand{\expectation}[2]{\ensuremath{\mathbb{E}_{#1}\left(#2\right)}}
+\newcommand{\expectation}[2]{\ensuremath{\mathbb{E}_{#1}\left\{#2\right\}}}
 
 \def\logLike{\ensuremath{\mathcal{L}}}
 

@@ -55,8 +55,10 @@
 \usepackage{amsmath, amsfonts, amssymb, amsthm}
 \usepackage{bm}
 \usepackage{todonotes}
+\usepackage{float}
 
 \usepackage[utf8]{inputenc}
+
 
 % Environments
 
@@ -263,6 +265,7 @@ Professor Jing Xiao, Head of Department
 \listoftables
 
 
+
 % And we need a clear separation between preface and text, otherwise
 % the numbering gets confused.
 
@@ -279,6 +282,8 @@ Professor Jing Xiao, Head of Department
 
 % Break the report into external files using one for each chapter. Each chapter file should start with the `\chapter{}`
 % command. Note that the chapter command starts a new page, as does the `\include{}` command.
+\graphicspath{{ch1_images/} {ch2_images/} {ch3_images/}}
+
 \include{chapter_1}
 \include{chapter_2}
 \include{chapter_3}
@@ -294,7 +299,7 @@ Professor Jing Xiao, Head of Department
 \section{A section within an appendix.}
 This is an appendix.
 
-
+\listoftodos
 % Last and least (at least, that's what the library says) - the
 % Bibliography.
 
