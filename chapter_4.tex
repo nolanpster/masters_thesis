@@ -1,0 +1,35 @@
+\chapter{Proactive Policy Inference}\label{chapt:proactive_inference}
+
+\todo[inline]{replace with flow-chart or improve algorithm description}
+\begin{algorithm}\label{alg:mini_batch}
+	set $\estimate{\policy{}}_2^{(0)}(s,a_2) = \mathcal{U}$;
+	\For{$b \in B$}{
+		The robot solves (Eq.\ref{eq:bellman}fix"Bellman") for $\policy{1}^b$;
+		Initialize demonstration set $D=\emptyset$;
+		\For{$d\ \in |D|$}{
+			\For{$t=0\ to\ |\traj_d|$}{
+				The robot plays policy $\policy{1}^b$ and the
+				environment plays the true \policy{2};
+				Record $\traj_t = (s_1, s_2)$;
+			}
+			Add $\traj_d$ to $D$;
+		}
+		Infer $\estimate{\policy{}}_2^{(0)}$;
+	}
+	\caption{Active-inference in Mini-batches}
+\end{algorithm}
+\section{Policy-model updates}
+\subsection{Fixed and Mobile kernels for policy inference}\label{sec:fixed_and_mobile_kernels}
+\todo[inline]{edit this!}
+
+If we make the assumption that the environment's policy is only influenced by the robot's state when the robot is sufficiently close to the environment, then we can segment our parameter and feature vectors into fixed and mobile elements, noted with the superscripts $f$ and $m$. The stationary kernels are still scattered in the environment's state set $S$. Now, consider a mobile kernel that is attached to the robot's location in the state set. When this kernel, the robot, is far from the environment it's anticipated influence is is very small due to the use of Gaussian kernels. 
+
+Explicitly, the \textit{Q}-function approximation can equivalently be represented as 
+\begin{equation} \label{eq:q_func_fixed_plus_mobile}
+\begin{split}
+\hat{Q}(s,e) & = <\vec{\theta}^f,\vec{\phi}^f(s,e)> + <\vec{\theta}^m,\vec{\phi}^m(s,e)> \\
+& = \hat{Q}^f(s,e) + \hat{Q}^m(s,e)
+\end{split}
+\end{equation}
+
+The kernel combination above is actually just a change of notation and the derivative of Eq. \ref{eq:traj_log_likelihood} is still Eq. \ref{eq:log_liklihood_derivative}. While the introduction of mobile kernels helps to lower the complexity of the \textit{Q}-function approximation, it introduces an ambiguity in the gradient update to the inferred environment's policy.
