@@ -1,35 +1,216 @@
 \chapter{Proactive Policy Inference}\label{chapt:proactive_inference}
 
-\todo[inline]{replace with flow-chart or improve algorithm description}
-\begin{algorithm}\label{alg:mini_batch}
-	set $\estimate{\policy{}}_2^{(0)}(s,a_2) = \mathcal{U}$;
-	\For{$b \in B$}{
-		The robot solves (Eq.\ref{eq:bellman}fix"Bellman") for $\policy{1}^b$;
-		Initialize demonstration set $D=\emptyset$;
-		\For{$d\ \in |D|$}{
-			\For{$t=0\ to\ |\traj_d|$}{
-				The robot plays policy $\policy{1}^b$ and the
-				environment plays the true \policy{2};
-				Record $\traj_t = (s_1, s_2)$;
-			}
-			Add $\traj_d$ to $D$;
-		}
-		Infer $\estimate{\policy{}}_2^{(0)}$;
-	}
-	\caption{Active-inference in Mini-batches}
-\end{algorithm}
-\section{Policy-model updates}
+    Assuming that \agent{1} has received some initial data $D^{(1)}$, the estimated policy of the uncontrollable agent
+    can be improved from some initial guess $\estimate{\policy{}}_2^{(0)}$ to form $\estimate{\policy{}}_2^{(1)}$. Let's
+    assume that $D^{(1)}$ was incomplete, it did not contain enough data for the following algorithm to meet the
+    tolerance required by Assumption \ref{assump:opt_policy_err}. Therefore, \agent{1} will need to gather more data,
+    trajectories, $D^{(b)},\ b=1,\ldots,B$. Ideally, $D^{(b)}$ will contain data that were lacking in all previous
+    batches. When there are not enough data, some estimates parameter elements, $\estimate{\theta}_\paramIdx$, will be
+    incorrect. The parameter vector inferred from any batch will be written $\estimate{\paramVec}^{(b)}$, which is not
+    to be confused with the sampled $\paramVec^{(i)}$ in Eq. \ref{eq:gradLogLike}. There are two options for
+    incorporating $D^{(1)}$ into the next batch.
+
+    First, the policy update to $\policy{1}^{(1)}$ can include only $\estimate{\policy{}}_2^{(1)}$; \agent{1} will
+    simply exploit the information from $D^{(1)}$ so that $\policy{2}^{(1)}$ maximizes the expected discounted reward,
+    as shown in Section \ref{sec:ADO_policy}. Since the transition function $T(s'|s,(a_1,a_2)) $ is stochastic, some new
+    data will probably be observed. This is considered to be a \textit{passive} algorithm, shown in Algorithm
+    \ref{alg:passive_mini_batch}.
+    \todo[inline]{improve algorithm description}
+    \begin{algorithm}\label{alg:passive_mini_batch}
+        set $\estimate{\policy{}}_2^{(0)}(s,a_2) = \mathcal{U}$;\\
+        \For{$b \in [1,B]$}{
+            Solves for $\policy{1}^b(s, \estimate{\policy{}}_2^{(b-1)} )$;\\
+            Initialize demonstration set $D=\emptyset$;\\
+            \For{$d\ \in |D|$}{
+                \For{$t=0\ to\ |\traj_d|$}{
+                    The robot plays policy $\policy{1}^b$ and the environment plays the true \policy{2};
+                    Record $\traj_t = (s_1, s_2)$;
+                }
+                Add $\traj_d$ to $D$;
+            }
+            Infer $\estimate{\policy{}}_2^{(b)}$;
+        }
+        \caption{Passive-inference in Mini-batches}
+    \end{algorithm}
+
+     \par
+     The second option is for \agent{1} to \textit{proactively} seek the most informative $D^{(1)}$.  Gathering data
+     about any unknown parameter elements will be given to \agent{1} as a bonus reward; \agent{1} proactively improves
+     the inference of $\estimate{\policy{}}_2$. Therefore, \agent{1} needs to determine which
+     $\estimate{\theta}_\paramIdx$\!'s are unknown.
+
+\section{Characterizing Unknown Parameters}\label{sec:unknown_params}
+    In the problem formulation, the transition function is jointly determined by the robot and the environment agent.
+    \[
+    P((s_1',s_2')|(s_1,s_2),(a_1,a_2)) = T(s_1'|s_1,a_1) \policy{2}(a_2|(s_1,s_2))
+    \]
+    If $\pi_2(a_2|(s_1,s_2))$ is state-dependent policy \textcolor{blue}{and non approximate solution is sort(sort
+    ???)}, then learning the dynamics of the MDP is equivalent to learning the policy $\policy{2}$. And both problems
+    have the same sample complexity, they are polynomial in the size of the joint state space and the action space of
+    the \agent{2}.  With the Gaussian policy approximation from Section \ref{sec:gauss_policy}, if the number of
+    parameters, $W$ is much less than $\abs{|S|\times A}$, then sample complexity will be reduced significantly.
+
+    Since the policy parameter estimate $\estimate{\paramVec}$ is a collection of Gaussian random variables, for each
+    state-action pair $s = (s_1,s_2)\in S$ and $a_2\in A$, we have \[
+    \estimate{\policy{}}_2(a_2| s) \propto \exp\left[Q(s,a_2;\estimate{\paramVec}) - V(s;\estimate{\paramVec})\right].
+    \]
+    %https://instream.zendesk.com/hc/en-us/articles/202386009-What-is-the-difference-between-a-Normal-Distribution-and-a-Lognormal-Distribution-
+    Since $Q(s,a;\estimate{\paramVec})$ is a Gaussian random variable with certain mean and variance, the exponential
+    the \textit{Q}-function is a lognormal random variable.  Therefore, $V(s;\estimate{\paramVec})$ is a summation of
+    lognormal random variables $V(s)=\kappa \log \sum\exp (Q(s,a;\estimate{\paramVec})/\kappa)$; it also is known that
+    the sum of lognormal random variables can be approximated by a lognormal random variable, denoted $Q^\ast(s,a
+    ;\uptheta)$.
+    \todo[inline, color=green]{$Q^\ast$ appears to be unused. Is this necessary?}
+
+    \textcolor{blue}{Next: can we generate the mean and variance of the $\pi_2(a|s)$ and use it to determine the bonus reward?}
+
+    \begin{definition}
+        Given two parameters $\epsilon, \varphi \in (0,1)$, a parameter $\theta_{\paramIdx}$ is $(\epsilon,
+        \varphi)$-known if with probability $1-\varphi$, the probability of the true value for $\paramElem$ is
+        $\epsilon$ close to the mean of the Gaussian distribution $\normal{\mu_{\paramIdx}, \nu_{\paramIdx}}$, \ie,
+        \[
+        P(\abs{\paramElem - \mu_{\paramIdx}} \ge \epsilon) \le \varphi.
+        \]
+    \end{definition}
+    When the estimated unknown policy parameter $\paramElem$ is $\epsilon$-close to the mean $\mu_{\paramIdx}$ with
+    probability $1-\varphi$, then we consider enough knowledge has been obtained for $\paramElem$ and treat it as a
+    \emph{known} policy parameter.
+
+    Let $\Theta_\known$ be the set of known policy parameters and $\Theta_{\unknown}$ be the remaining unknown
+    parameters.  Next, we present a method that enables to determine whether a state is unknown from the knowledge of
+    $\Theta$.
+
+    First, given that $\paramVec_i$ is a Gaussian variable, the $Q$ function for a pair of state-action $(s,a)$ is
+    \[
+    Q(s,a ;\uptheta) \sim \sum_{i=1}^N \phi_i(s,a) \normal{\mu_i, \sigma_i^2}
+    \]
+    where $\phi_i(s,a),i=1,\ldots, N$ can be viewed as the mixing parameters.
+    \todo[inline, color=green]{I would like to rewrite the preceding sentence as I have below. Is my interpretation
+    correct? My next green comment is (potentially) also related to this.}
+
+    \emph{First, given that each sampled parameter vector in Eq. \ref{eq:gradLogLike}, $\paramVec^{(i)}$, is a Gaussian
+          variable, the $\estimate{Q}$-function is
+          \[
+          \estimate{Q}(s,a ;\paramVec^{(i)}) \sim \sum_{w=1}^W \featElem(s,a_2) \normal{\mu_w, \nu_w^2}
+          \]
+          where $\featElem(s,a_2),\ w=1,\ldots, W$ can be viewed as the mixing parameters. }
+
+    A state $s$ is known if and only if for any $a_2 \in A$, $Q(s,a_2)$ is known. Since the $Q$-value is a mixture of
+    Gaussians, the mean and variance of $Q(s,a;\estimate{\paramVec}^{(b)})$ can be computed and used after each batch of
+    new data to determine the distribution of a random variable -- the estimate of $\policy{2}(a|s)$.
+
+    If we were trying to solve a Probably-Approximatly-Correct- (PAC)-MDP, we would require a desired accuracy in
+    learning the transition function, for example, $\bar T(s'|s,a_1) - T(s'|s,a_1) \le \varepsilon$ with probability
+    $1-\varphi$, where $\bar T$ is the estimated transition function and $T$ is the true transition function.
+
+    Based on the needed accuracy and the relation between $T$ and $\policy{2}$,
+    \[
+    P(s'|s,a_1) = T(s'|s,(a_1,a_2))\pi_2(a_2|s),
+    \]
+    we can show:
+    \begin{align*}
+        \bar P(s'|s,a_1)  -P(s'|s,a_1)
+        & = T(s'|s,(a_1,a_2))\left( \pi_2(a_2|s) - \bar \pi_2(a_2|s)
+        \right)\\
+        & \approx T(s'|s,(a_1,a_2))\big(\exp(Q(s,a_2)-V(s)) - \exp(Q(s,a_2;\paramVec^{(b)})-V(s;\paramVec^{(b)})) \big)
+    \end{align*}
+
+    Since $Q(s,a_2;\paramVec)$ is a Gaussian, $\exp Q(s,a_2;\paramVec)$ is log-normal, ${V =\log \exp \sum
+    Q(s,a;\paramVec)}$ can be approximated as a Gaussian (similar to approximating hardmax with softmax, but here we
+    approximate $V$ by $\max_a Q(s,a)$). Given this knowledge, we can quantify the bounded error between the estimated
+    transition and true transition by analyzing the distribution of random variable
+    $\exp(Q(s,a_2;\uptheta)-V(s;\theta))$.
+
+    \todo[inline, color=green]{Is there a significance to using 'uptheta' in the Q-function vs 'theta' in the Value
+    function above? I've replaced several of them with 'paramVec' since I was thinking we only needed to differentiate
+between $\paramVec$ and $\Theta$ ('Theta')...}
+
+    \todo[inline,color=green]{
+        Is this section more justification for our method for building the bonus reward or does it show that we only
+        need to sample the "policy-space" since we've shown \policy{2} is a Gaus-RV? In that case, what do we consider
+        samples? Is $\policy{2}(s;\paramVec^{(i)})$ (Eq \ref{eq:gradLogLike}) a sample, or is
+        $\policy{2}^{(b)}(s,\estimate{\paramVec}^{(b)})$ a sample (Alg. \ref{alg:passive_mini_batch})?
+        }
+
+    \color{blue}
+    While I was trying to figure out what we consider ``samples", I thought of a related way to determine if \paramElem
+    should be in $\Theta_\known$. If we record all (or a subset of) the $n=1,\ldots,N$ values of $\rho^n = (\mu_n,
+    \nu_n)$ from in each iteration of the gradient ascent algorithm (see Eq. \ref{eq:gradient_update} and the first
+    sentence of Sec. \ref{sec:policy_infer_terminate}) we can analyze Shannon's Entropy of the samples generated in the
+    $b$-th inference of \policy{2} relative to the distribution of the final iteration ($N$):
+    \[
+    \mathcal{H}(\paramElem^{(b)}) = - \sum_{n=1}^{N} p(\mu_n| \rho_N)\log p(\mu_n|\rho_N).
+    \]
+    If a parameter is \emph{known} from a previous batch $b-1$, then we expect this $\paramElem^{(b)}$ not to change
+    very much, therefore it will have a very low entropy. If it is unknown, then the mean value $\mu_w$ will slowly
+    wander around a lot and have a very high entropy see Fig. \ref{fig:bad_gradient_dynamics_nu} vs (Fig.
+    \ref{fig:smooth_gradient_dynamics_nu}.  and Fig. \ref{fig:fast_gradient_dynamics_nu}).
+
+    \par
+    This idea is definitely motivated by my use of Eq. \ref{eq:param_var_bounds} due to the numerical stability issues.
+    \color{black}
+
+
+\subsection{Bonus Reward}
+
+    \todo[inline,color=green]{See changes from $\delta R(s,a_2)$ to $\delta R(s)$ here}
+    Per Eq. \ref{eq:QFuncApprox} the policy $Q(s,a) = \sum_{w=1}^{\paramLen} \theta_w \phi(s,a)$ so $\pi(s,a)\propto
+    \exp(Q(s,a)/\traj)$. Given the Gaussian distributions of $\paramVec$ from Sec. \ref{sec:unknown_params}, the Q-value
+    has a variance
+    \[
+    \Omega(s,a_2)=\sum_{w=1}^{\paramLen} \nu_w^2 \phi_w^2(s,a_2).
+    \]
+    What we would like to do is give \agent{1} a bonus reward whenever \agent{2} takes an action for which
+    $\estimate{Q}(s,a_2)$ has a large $\Omega(s,a_2)$. Since \agent{1} can not actually controll \agent{2} to take an
+    ``uncertain" action $a_2$ at a joint state $s$, we build an exploration bonus reward at each joint state.
+
+    Using the original reward function of the robot from Def. \ref{def:hipmdp}, the reward including an exploration
+    bonus is defined as
+    \[
+    \hat R (s,a) = R(s,a) + \delta R(s)
+    \]
+    and
+    \[\delta R(s)  \propto \sum_{a_2\in A}\sum_{\theta_w\in \Theta_\unknown} \nu_w^2 \phi^2_w(s,a_2)
+    \]
+    In practice, we can select a constant $B$ and define
+    \[
+    \delta R(s) = B \sum_{a_2\in A}\sum_{\theta_w\in \Theta_\unknown} \nu_w^2 \phi_w^2(s,a).
+    \]
+    The constant $B$ has a role of weighting between exploration and exploitation.
+
+    \par
+    The exploration bonus has the following property: When all parameters becomes known, the exploration bonus will
+    become zero and the policy recovers to the optimal policy with respect to the original reward function. By
+    definition, for the same estimate of  $\paramVec$, and for any two pairs $(x,a_1), (y,a_2),\ \forall\ x,y\in S_2 | x
+    \neq y$, the uncertainty in $Q(x,a_1)$ is greater than that of $Q(y,a_2)$ if $\sum_{a_2\in A}\sum_{\theta_w\in
+    \Theta_\unknown} \nu_2^2 \phi^2_w(x,a_2) > \sum_{a_2\in A}\sum_{\theta_w\in \Theta_\unknown}  \nu_w^2
+    \phi^2_w(y,a_2)  $, and thus exploring any joint states $s=(s_1,x), \forall s_1 \in S_1$ will receive a higher
+    exploration bonus.
+
+
+\section{Multi-agent Policy Model}
+
+    For the example tasks described in Chapter \ref{chapt:motivation}, a human would infer that the uncontrollable
+    agents would only change their actions if the controllable agent is within a relative distance. Other cars might
+    only swerve away from a driver if two cars become dangerously close. Alternatively, a human holding a basket might
+    only extend their arms to accept a load of items when the manipulator is sufficiently close to them.
+
 \subsection{Fixed and Mobile kernels for policy inference}\label{sec:fixed_and_mobile_kernels}
-\todo[inline]{edit this!}
 
-If we make the assumption that the environment's policy is only influenced by the robot's state when the robot is sufficiently close to the environment, then we can segment our parameter and feature vectors into fixed and mobile elements, noted with the superscripts $f$ and $m$. The stationary kernels are still scattered in the environment's state set $S$. Now, consider a mobile kernel that is attached to the robot's location in the state set. When this kernel, the robot, is far from the environment it's anticipated influence is is very small due to the use of Gaussian kernels. 
+    \begin{assumption}\label{assump:multi_agent_interraction}
+        The uncontrollable agent, \agent{2}, has a nominal policy, and when the agents are within some unknown distance
+        $\mathsf{x}$, \policy{2} is biased either towards or away from the position of \agent{1}:
+        \begin{align*}
+            \policy{2} & = \begin{cases}
+                               f(s_2) & \text{if}\ \textnormal{SP}(s_1,s_2) > \mathsf{x} \\
+                               f(s_1,s_2) & \text{if}\ \textnormal{SP}(s_1,s_2) \leq \mathsf{x}.
+                           \end{cases} \\
+        \end{align*}
+    \end{assumption}
 
-Explicitly, the \textit{Q}-function approximation can equivalently be represented as 
-\begin{equation} \label{eq:q_func_fixed_plus_mobile}
-\begin{split}
-\hat{Q}(s,e) & = <\vec{\theta}^f,\vec{\phi}^f(s,e)> + <\vec{\theta}^m,\vec{\phi}^m(s,e)> \\
-& = \hat{Q}^f(s,e) + \hat{Q}^m(s,e)
-\end{split}
-\end{equation}
+    Using Assumption \ref{assump:multi_agent_interraction}, then we can segment our parameter and feature vectors into
+    fixed and mobile elements. The fixed kernels are still scattered at locations $c_l \subset S_2,\ l=0,\ldots,K-1$.
+    Now, consider a mobile kernel that is attached to the \agent{1}\!'s location. When this kernel is far from the
+    current state of \agent{2} its anticipated influence is very small due to Eq. \ref{eq:kernel_func}. This simply
+    requires that another $|A|$ parameters elements are included in \paramVec.
 
-The kernel combination above is actually just a change of notation and the derivative of Eq. \ref{eq:traj_log_likelihood} is still Eq. \ref{eq:log_liklihood_derivative}. While the introduction of mobile kernels helps to lower the complexity of the \textit{Q}-function approximation, it introduces an ambiguity in the gradient update to the inferred environment's policy.
