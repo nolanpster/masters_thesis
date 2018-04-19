@@ -109,9 +109,9 @@
 % hardcoded line breaks, you have to mark them with a double backslash (\\)
 
    {\large
-	\textbf{
-	Proactive Learning in Hidden-Parameter Markov Decision Processes
-	}
+        \textbf{
+        Proactive Planning through Active Policy Inference in Stochastic Environments
+        }
    }
 
 
@@ -171,6 +171,20 @@ APPROVED:
 % Change this to your favorite CS professor.
 Professor Jie Fu, Major Thesis Advisor
 
+%\vspace{0.5in}
+%\rule{3in}{0.8pt}
+%
+%% Change this to your favorite CS professor.
+%Professor Carlo Pincirol, Major Thesis Advisor
+%
+%
+%\vspace{0.5in}
+%\rule{3in}{0.8pt}
+%
+%% Change this to your favorite CS professor.
+%Professor Jie Fu, Major Thesis Advisor
+
+
 \vspace{0.5in}
 \rule{3in}{0.8pt}
 
@@ -196,20 +210,18 @@ Professor Jing Xiao, Head of Department
 % Fortunately, LaTeX has thought of that, so it's very easy:
 %
 \begin{abstract}
-    This thesis develops novel proactive policy inference algorithms to be used in multi-agent Markov Decision Processes
-    with hidden parameters (mention bonus reward here if I get it to work). A controllable agent must perform path
-    planning to maximize its reward, but the uncontrollable agent's policy is unknown. The controllable agent can
-    improve the likelihood of a reward by correctly inferring the uncontrollable agent's policy, but the actions that
-    provide the most information for inference decrease the chance of reward. By balancing exploration and exploitation,
-    the controllable agent improves the likelihood of a reward as it builds up a history of interactions with the
-    uncontrollable agent. The policy of the uncontrollable agent is modeled as a Softmax policy, and its Q-function is
-    approximated using a linear combination of basis-functions and a parameter vector. Assuming that the optimal
-    parameter vector is the mean value of a multivariate-normal distribution, the uncontrollable policy is inferred by
-    performing gradient ascent that maximizes the log-likelihood of the observed data given sampled parameter vectors. This
-    policy parameterization also produces a metric that quantifies which parameters are unknown due to lack of data.
-    When the agents interact, the controllable agent receives a bonus reward for gathering data that was lacking in a
-    previous batch of policy-rollouts, thus accelerating the inference procedure and maximizing the likelihood of reward
-    in the original task.
+    In multi-agent Markov Decision Processes, a controllable agent must perform optimal planning in a dynamic and
+    uncertain environment that includes another unknown and uncontrollable agent.  Given a task specification for the
+    controllable agent, its ability to complete the task can be impeded by an inaccurate model of the intent and
+    behaviors of other agents. In this work, we introduce an active policy inference algorithm that allows a
+    controllable agent to infer a policy of the environmental agent through interaction. Active policy inference is
+    data-efficient and is particularly useful when data are time-consuming or costly to obtain. The controllable agent
+    synthesizes an exploration-exploitation policy that incorporates the knowledge learned about the environment's
+    behavior. Whenever possible, the agent also tries to elicit behavior from the other agent to improve the accuracy of
+    the environmental model.  This is done by mapping the uncertainty in the environmental model to a bonus reward,
+    which helps elicit the most informative exploration, and allows the controllable agent to return to its main task as
+    fast as possible.  Experiments demonstrate the improved sample efficiency of active learning and the convergence of
+    the policy for the controllable agents.
 \end{abstract}
 
 % From here on, we need Roman page numbers according to the library
@@ -221,22 +233,18 @@ Professor Jing Xiao, Head of Department
 % No standard environment for that, so we'll format it by hand.
 %
 \begin{center}
-	\textbf{Acknowledgements}
+        \textbf{Acknowledgements}
 \end{center}
 
-	Original template text: I would like to express my gratitude to my advisor who made
-	sure the thesis has at least 120 pages, 200 pictures and lots
-	of formulae and thus made me master \LaTeX{} like my native
-	language.
+    Original template text: I would like to express my gratitude to my advisor who made sure the thesis has at least 120
+    pages, 200 pictures and lots of formulae and thus made me master \LaTeX{} like my native language.
 
-        My thanks are also due to my reader... who has read the thesis
-        in the two days that I gave him since it wasn't done until two
-        days before due date.
+    My thanks are also due to my reader... who has read the thesis in the two days that I gave him since it wasn't done
+    until two days before due date.
 
-	Thanks also to ... lots of friends, the fact that a week has
-	seven days instead of only five as I had always thought, and
-	the fact that I own a key to the building so I can work at four
-	in the morning whenever I feel like it. That is, all the time.
+    Thanks also to ... lots of friends, the fact that a week has seven days instead of only five as I had always
+    thought, and the fact that I own a key to the building so I can work at four in the morning whenever I feel like it.
+    That is, all the time.
 
 % P.S. You don't have to add me to the acknowledgements for providing
 % this file :)
