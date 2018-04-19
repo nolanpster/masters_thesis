@@ -301,7 +301,7 @@
 
     \noindent
     The stepsize parameter, $\lambda$, limits the rate of change of the distribution moments, and the velocity memory,
-    $\eta$ helps the iteration bootstrap itself through local minimums. The ``velocity'' of each gradient is stored in
+    $\eta$ helps the iteration bootstrap itself through local minimums as suggested by \cite{kingma2014adam}. The ``velocity'' of each gradient is stored in
     $\dot{\vect{\mu}}_n$ and $\dot{\vect{\nu}}_n$, respectively.
 
 \subsubsection{Algorithm Termination}\label{sec:policy_infer_terminate}
