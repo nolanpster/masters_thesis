@@ -195,10 +195,22 @@
 
 \subsection{Active Learning}
 
+    \todo[inline]{provide high level overview of active learning}
+
     Using a semi-MDP,  \cite{andersen2017active} use a policy that is exploration only but non-Markovian.  By clustering
     states to symbols, where symbols can be chained together to represent high level task options, the exploration
     policy chooses actions that maximize the expected information gain.
 
+    Planning to read the following Fri-Sun:
+    \begin{itemize}
+        \item \cite{khamassi2017active}
+        \item \cite{andersson2017deep}
+        \item \cite{martinez2007active}
+    \end{itemize}
+    Will include summaries or contributions if applicable.
+
+
+    Gaussian processes might be a good option for generalizing policy dependence on relative position in future work.
 
 \subsection{Novelty of this thesis (better-ize this name)}\label{sec:literature_novelty}
 
@@ -209,7 +221,7 @@
         \item less conservative than mini-max, we don't rule out the possiblility that the other agent is actually
             helping us complete the main objective.
         \item use novel Gaussian policy approximation for policy inference
-        \item (\textit{hopefully}) provide an exploration bonus reward that accelerates data gathering for the best
+        \item provide an exploration bonus reward that accelerates data gathering for the best
             inference.
         \item We parameterize the policy using a set of basis functions that reduce the dimensionality of the required
             inference from $|S|\times|A|$ to $|K|\times|A|$ where $|K|$ is the number of kernels used. Each action at
@@ -223,20 +235,21 @@
             first and second moments of these distributions, from \cite{tangkaratt2014model}. The extension is that we
             feedback the second moment of each distribution to induce exploration and improve the data used for the next
             mini-batch of trajectories.
-         \item Generally \ac{HiPMDP}s assume some prior distribution of the parameters. There is a trade-off between too many parameters increasing computational costs, and the generalization error induced by too few parameters. By propagating the second-moment of each parameter distribution we can more effectively identify extraneous parameters, as well as parameters that are unknown and may, or may not, be necessary.
-         \item we improve over \Rmax by not valuing every exploration step equally, but preferentially exploring some more informative states.
+        \item Generally \ac{HiPMDP}s assume some prior distribution of the parameters. There is a trade-off between too
+            many parameters increasing computational costs, and the generalization error induced by too few parameters.
+            By propagating the second-moment of each parameter distribution we can more effectively identify extraneous
+            parameters, as well as parameters that are unknown and may, or may not, be necessary.
+        \item we improve over \Rmax by not valuing every exploration step equally, but preferentially exploring some
+            more informative states.
 
          \item \cite{doshi2016hidden} uses a batch-inference, we use mini-batch?
 
-         \item There are also parallels to imitation learning, but we now have a feedback path that determines the states where an
-         agent would need assistance, instead of the heuristic methods used in DAGGER.
+         \item There are also parallels to imitation learning, but we now have a feedback path that determines the
+             states where an agent would need assistance, instead of the heuristic methods used in DAGGER.
 
-         \item Many implementations of \ac{pgpe} parameterize the policy as drawn from a normal distribution, with a mean value
+         \item Many implementations of \ac{pgpe} parameterize the policy as drawn from a normal distribution, with a
+             mean value
 
     \end{itemize}
 
-\subsection{Preliminaries}\label{sec:preliminaries}
-Because our experiment requires resolving for a policy, we'll use the \ac{EM} solution from
-\cite{toussaint2010expectation}. The computational requirements to solve for a sub-optimal policy for \agent{1} are
-much less than traditional value iteration. Although the solution is sub-optimal, the solution is complete for the
-entire state-action-space. The resulting policy is stochastic, which can help gather more data.
+
