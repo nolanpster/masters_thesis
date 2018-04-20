@@ -72,6 +72,13 @@
         P(\abs{\paramElem - \mu_{\paramIdx}} \ge \epsilon) \le \varphi.
         \]
     \end{definition}
+
+    Chernof bound \quotationMarks{B. L. Mark and W. Turin, Probability, Random Processes, and Statistical
+        Analysis. Cambridge University Press Textbooks, 2011}
+
+        \brk
+        \brk
+
     When the estimated unknown policy parameter $\paramElem$ is $\epsilon$-close to the mean $\mu_{\paramIdx}$ with
     probability $1-\varphi$, then we consider enough knowledge has been obtained for $\paramElem$ and treat it as a
     \emph{known} policy parameter.
@@ -213,4 +220,15 @@ between $\paramVec$ and $\Theta$ ('Theta')...}
     Now, consider a mobile kernel that is attached to the \agent{1}\!'s location. When this kernel is far from the
     current state of \agent{2} its anticipated influence is very small due to Eq. \ref{eq:kernel_func}. This simply
     requires that another $|A|$ parameters elements are included in \paramVec.
+
+
+\section{Future work}
+    This is especially true if a previously learned model can be transferred to another agent or task to kick-start its
+    policy search \colorbox{yellow}{\cite{killian2017robust}}.
+
+    \todo{read this}
+
+    On stationarity: In the batch framework, the robot policy is fixed for each batch, making those sampled trajectories
+    i.i.d.. If, the environmental policy was allowed to change between each batch, then the mean and variances of the
+    parameters would adjust accordingly, allowing this algorithm to transcend the bounds we have initially given it.
 
