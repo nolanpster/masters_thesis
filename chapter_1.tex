@@ -33,19 +33,21 @@
     to \quotationMarks{pick up everything on the table and put it in the box that the human is holding.} It's clear that
     accurately representing the probabilistic motion distribution of uncontrollable agents -- cars, pedestrians, or
     people holding boxes -- will benefit the autonomous agent as it tries to complete its main objective. This thesis
-    details an algorithm that elicit more informative agent interactions that the controllable agent then uses to
+    details an algorithm that elicits more informative agent interactions that the controllable agent then uses to
     effectively plan its future actions. This work is built upon both recent and fundamental literature in the \ac{RL}
     community.
+
+    \section{Introduction}\label{sec:introduction}
 
     Modeling stochastic environments with discrete state and action spaces has traditionally been accomplished with
     \iac{MDP}. An agent that takes planned actions in \iac{MDP} is following its \textit{policy}. When an autonomous
     agent is given a task to complete in its environment, the agent is rewarded upon completing this task. In a
     realistic scenario, there are often too many unknowns to solve for a control policy that has the highest likelihood
     or returning a reward. The agent may not know how the actions it can take affect its transitions from one state to
-    another, and, therefore, can't immediately make a valuable plan. Or, the agent may know, nominally, what actions to
-    take to earn the reward, but the environment in which the agent acts may only allow for stochastic transitions
-    between states; in this case the agent needs to learn a model of its environment before it can claim that it can
-    \textit{optimally} receive a reward from an initial state or configuration.
+    another, and, therefore, can't immediately make a valuable plan. Or, the agent may know, what actions to
+    take to earn the reward, but environmental disturbances require that the agent adaptively plan. In this last case,
+    the agent needs to learn a model of its environment before it can claim that it can \textit{optimally} receive a
+    reward from an initial state or configuration.
 
     In this work, we'll assume that a stochastic environment has been successfully modeled, and that, given an arbitrary
     task, our controllable agent can solve for an optimal policy that maximizes the likelihood of reward. However, when
@@ -65,133 +67,145 @@
 
 
     For the rest of Chapter \ref{chapt:motivation}, a good example to keep in mind is:
-    \begin{problem}
-        A mobile robot repeatedly traverses a factory floor to deliver a parcel. At some-point, a another robot also
-        starts working in the area, and the robot does not know what the other robot ................is this excessive
-        or is this a good place to put an example problem for the reader? Thoughts?
+    \begin{problem}\label{prob:factory_example}
+        Each day, a mobile robot repeatedly traverses a factory floor to deliver a parcel. Eventually, a second robot
+        also starts working in the area, and the first robot does not know anything about the second robot's task. Now,
+        the first robot must not collide with the second robot, and without knowledge of the second robot's intent, it
+        now takes longer to deliver it's parcel each day. After each week, the first robot can it's observations of the
+        inter-robot interactions to improve its delivery plan. Is there a better solution to greedily updating the plan?
+        Can the first robot plan to move in such a way that will expose more about the second robot?
     \end{problem}
 
-\section{Latent Variables in Markov Decision Processes}\label{sec:literature_hipmdp}
+\section{Inferring Latent Variables in MDPs}\label{sec:literature_hipmdp}
 
-    Given that there are some unknown parameters in the multi-agent scenario described above, we'll extend the model
-    from \iac{MDP} to a \ac{HiPMDP} as introduced in \cite{doshi2016hidden}. When a small subset of parameters nead to
-    be learned in comparison to the size of the state-action space, \ac{HiPMDP}s are well suited.
-    %This is especially true if a previously learned model can be transferred to another agent or task %to kick-start
-    %its policy search \colorbox{yellow}{\cite{killian2017robust}}.
-    This is very applicable when certain aspects of the environment are already known, and sensory information is
-    precise and accurate. For our experiment, we'll assume that the uncontrollable agent operates in the same
-    environment as the controllable agent; it is subject to the same stochastic transition model.
+        To solve an adaptive \ac{MDP} \cite{hernandez2012adaptive}, the agent must learn or infer latent (hidden)
+        environmental parameters. The main techniques to accomplish this fall into two distinct categories,
+        model-\textit{based} \ac{RL}, and model-\textit{free} \ac{RL}. Imitation learning, as well as active learning,
+        also share algorithmic traits that the algorithm presented here will mimic. In general, the \ac{RL} comunity is
+        now focusing on methods that combine model-free with model-based approaches. A recent survey of these algorithms
+        is \cite{polydoros2017survey}.
 
-    The goal of modeling with a \ac{HiPMDP} is to learn or infer a parameter \paramVec\ that describes the transition
-    function of the controllable agent so that it can optimally plan to earn rewards. In this work, that parameter will
-    describe the policy of the uncontrollable agent, since the actions of the uncontrollable agent affect the joint
-    state of the system. Thus, learning the policy of the uncontrollable agent equates to learning a parameter vector in
-    the transition model that the controllable agent must know to optimally plan.
+\subsection{Model Based Solutions}\label{sec:model_based_lit}
 
-    In more general problems,  sensors and actuators have intrinsic biases and noise, and are also subject to extrinsic
-    errors such as occlusion. The \ac{POMDP} is the framework used for these problems and was introduced in
-    \cite{kaelbling1998planning}. The \ac{POMDP} model uses a Bayesian update given observed state transitions to update
-    the belief of the current state, as well as a parameterization of a transition model.
+    Given that there are some unknown parameters in the multi-agent scenario described in Problem
+    \ref{prob:factory_example}, we'll extend the model from \iac{MDP} to a \ac{HiPMDP} as introduced in
+    \cite{doshi2016hidden}. \ac{HiPMDP}s are well suited to problems the number of parameters to learn is small relative
+    to the size of the state-action space. This is a very applicable framework when certain aspects of the environment
+    are already known, and sensory information is precise and accurate.
 
-    Arguably in our experiment we only need to capture the \textit{intent} of the uncontrollable agent. One option has
-    been presented in \cite{bandyopadhyay2013intention}, which used \iac{MOMDP} to provide a belief of pedestrians
-    intent when they interact with an autonomous golf-cart.  The authors state that ``the [golf-cart]'s ultimate goal is
-    to complete the specified task and not to recognize intention." In other words, learning the policy of an
+    Proprioceptive sensors and the agent's actuators have intrinsic biases and noise. Exteroceptive sensors are
+    additionally subject to occlusion. The \ac{POMDP} frames these problems and uses a Bayesian update given observed
+    state transitions to adjust the beliefs of the current state and parameterization of a transition model
+    \cite{kaelbling1998planning}. There are many algorithms tuned to solve \acp{POMDP}, as discussed by
+    \cite{bandyopadhyay2013intention}, but the model uncertainties scale with the problem's size.
+
+    Arguably, simply exploiting information from a multi-agent interaction only requires a controllable agent to capture
+    the \textit{intent} of an uncontrollable agent. One option has been presented in \cite{bandyopadhyay2013intention}
+    and uses an instantiation of a \ac{POMDP}, the \iac{MOMDP}, to provide a belief of pedestrians intent when they
+    interact with an autonomous golf-cart.  The authors state that \quotationMarks{the [golf-cart]'s ultimate goal is to
+    complete the specified task and not to recognize intention.} In other words, learning the policy of an
     uncontrollable agent provides excessive information to handle a vehicle-pedestrian encounter in a crosswalk.
-    Instead, we'll opt to infer a complete approximation of the uncontrollable, stochastic, policy so that the
-    controllable agent can improve its planning over time.
 
-    Model uncertainty in \ac{MDP}s can be dealt with in several ways. It's possible to explicitly learn an underlying
-    transition model like \cite{Fu-RSS-14}, which introduces the \ac{pacmdp}. Here, the authors show a polynomial bound
-    on the number of samples needed to approximately learn a transition system in an MDP within a confidence interval.
-    The authors also present an \ac{MLE} of the transition model parameters, complete with empirical mean and variance,
-    but this requires a parameter set that scales with the size of the state and action domains. Similarly, the \Rmax
-    algorithm from \cite{brafman2002r} would require that the controllable agent coerce the multi-agent system to visit
-    states until each \textit{joint} state has been visited enough times to conclude, with a specified confidence, what
-    the policy of the uncontrollable agent is. Instead, we'll generalize our inference to use a feature set and won't
-    require the system to visit explicitly every joint-state.
+
+    To prove that a transition model has been learned,  \cite{Fu-RSS-14} puts guarantees on the samples required to
+    achieve a \ac{pacmdp}. The authors show that the number of samples needed to learn a transition system in an
+    \ac{MDP} that has a bounded model error scales polynomially.  The authors also present an \ac{MLE} of the transition
+    model parameters, complete with empirical mean and variance, but this requires a parameter set that scales with the
+    size of the state and action domains.
+
+    The \Rmax algorithm from \cite{brafman2002r} is specifically geared to solve a multi-agent Problem
+    \ref{prob:factory_example} like. But, \Rmax would require that the controllable agent coerce the visits each
+    \textit{joint}-states enough times to conclude, with a specified confidence, what the policy of the uncontrollable
+    agent is.
 
     Using another approach in the face of uncertain transitions, \cite{bertuccelli2012robust} merge adaptive and robust
     methods for solving \acp{MDP}. Normally a robust solution uses the \textit{minimax} approach, it plans for the
-    worst-case transition. Instead, in \cite{bertuccelli2012robust}, \iac{uav} models its uncertain transitions with a
-    Dirichlet Distribution. In an algorithm like an \ac{ekf}, transition samples form an empirical covariance matrix of
-    the systems transition model so that the \ac{uav} can reduce its exposure to a failed mission.
+    worst-case transition. Instead, \iac{uav} models its uncertain transitions with Dirichlet Distributions. In an
+    algorithm like an \ac{ekf}, transition samples form an empirical covariance matrix of the system's transition model
+    so that the \ac{uav} can reduce its exposure to a failed mission.
 
     Also with a minimax objective, \cite{chinchali2017multi} attempt to learn the true model of several adversaries by
-    minimizing \quotationMarks{the cost of information gain}. Each adversarial agent is modeled with an \ac{MDP} and
-    generalized temporal logic specification that they are presumably trying to satisfy. The information gain is
-    rewarded by reducing the entropy of belief of the current state. Each temporal logic specification is designed ahead
-    of time, and the agent interacts with its environment to identify which specification the adversary is following.
+    minimizing \quotationMarks{the cost of information gain}. Each adversarial agent is modeled with an \ac{MDP} and a
+    set of pre-designed temporal logic specifications. The goal is to identify which specification each adversary is
+    trying to satisfy. The controllable agent recieves a reward by maximizing the information gain, the entropy of the
+    current state belief.
 
     Similarly, \cite{lim2013reinforcement} assume that an adversary in \iac{MDP} may have a non-stationary policy. If
     the adversary chooses to play \quotationMarks{nicely}, then a minimax policy would be far too conservative. Each
     time a state transition is observed, the authors record it and subject each new transition to a
     \quotationMarks{stochasticity check}, essentially trying to detect a change in the adversarial policy using the
     Chernoff bound. Both \cite{lim2013reinforcement} and \cite{bertuccelli2012robust} have tried to overcome the
-    conservativeness often encountered in \textit{minimax} policies. We, however, do not limit the case to adversaries,
-    there is a chance that the uncontrollable agent will help earn rewards. We'll formally state later that we require
-    the uncontrollable policy to be stationary.
+    conservativeness often encountered in \textit{minimax} policies, but environmental agents can agnostic, or even
+    complimentary, to the controllable agent's intent.
 
-\subsection{Comparison to Reinforcement Learning}
-    The controllable agent must be able to infer the policy of the uncontrollable agent while it repeatedly completes
-    its task. There are many \ac{RL} algorithms that can be adapted to a policy inference task, while others serve as
-    inspiration but share common aspects. This work adapts the \ac{pgpe} algorithm presented, and extended, by
-    \cite{sehnke2010parameter} and \cite{tangkaratt2014model}, respectively. In \ac{RL} problems, policy gradient
-    methods search the policy-space of an agent, trying to maximize the likelihood of a reward by iteratively updating
-    parameters that build a policy. Traditionally, the \reinforce algorithm from \cite{williams1992simple} has a high
-    variability on the gradient used to update the parameters, especially when the reward-space is sparse. For instance,
-    a binary reward may only be awarded for policies in a very, very, small subset of the policy-space.
+    In general, model-based solutions allow the agent to leverage it's belief about future states as it plans. This
+    belief is reflected in the \textit{value} of each state, but is very sensitive to model errors.
+
+\subsection{Model Free Solutions}
+    Model-free methods do not require the agent to learn the underlying transition model, simply the best action at each
+    state. In \ac{RL} problems, policy gradient methods sample the policy-space of an agent, trying to maximize the
+    likelihood of a reward by iteratively updating parameters that build a policy.
+
+    Traditionally, the \reinforce algorithm \cite{williams1992simple} has a high variability on the gradient used to
+    update the parameters. This is especially true when the reward-space is sparse and the system receives a binary
+    reward for very small subset of the policy-space. Each sample from the policy-space must be executed on the real
+    system, gathering a set of samples. This is referred to as a policy \text{roll-out}, and combining the trajectories
+    formed by each roll-out allows the model-free algorithms to make use of Monte-Carlo methods. As the policy
+    parameterization is updated, new data must be gathered to ensure statistical independence.
 
     To reduce the variability of the gradients, \cite{peters2008reinforcement} formalized the practices of using
     \textit{baseline-subtraction} and \textit{natural} gradients. By subtracting an unbiased baseline from each policy
-    sample, the variance of the gradient is drastically reduced and natrual gradients promote faster convergence.
+    sample, the variance of the gradient is drastically reduced. But, As noted by \cite{tangkaratt2014model}, samples
+    used for the baseline must be independent of all samples used for the policy gradient. Natrual gradients promote
+    faster convergence by accounting for the covariance of policies. If a policy \textit{almost} earned a reward, and
+    was very close in measure to one that did, it is allowed more influence the parameter gradient.
 
-    The advantage of policy-gradient methods is that they are traditionally \textit{model-free}; an underlying
-    transition model of an \ac{MDP} will not be learned. These methods also do not require the system to simultaneously
-    learn the optimal value-function which can be computationally, and sampling-inefficient. The sampling-inefficiency
-    is two fold, since convergence is slower and it provides more wear-and-tear on an mechatronic system.
+\subsection{Combination Methods}
 
-    The \textit{actor-critic} method family combines model free approaches, with model based approaches as discussed in
-    Sec. \ref{sec:literature_hipmdp}. Originally presented by \cite{konda2000actor}, the actor-critic methods use two
-    stages. The actor is responsible for improving the policy through trials, and the critic improves the estimated
-    value function. Examples of this are \textit{natural} actor-critic in \cite{peters2008reinforcement}, and
+    While model-free solutions do not require the system to learn the underlying  transition funciton, the model-based
+    approaches provide insight into the probability of future states. Model-free solutions often exhibit slow
+    convergence and taking enough data leads to excessive wear-and-tear on the mechatronic systems to be learned.
+    Model-based solutions, however, require prior knowledge about the systems structure.
+
+    The \textit{actor-critic} method family combines model free, with model based approaches. Originally presented by
+    \cite{konda2000actor}, the actor-critic methods use two stages. The actor is responsible for improving the policy
+    through trials using a model free approach, and the critic improves the estimated value function by updating the
+    environmental model. Examples of this are \textit{natural} actor-critic in \cite{peters2008reinforcement}, and
     \textit{path-consistancy learning} in \cite{nachum2017bridging}.
 
-    The PILCO algorithm from \cite{deisenroth2011pilco}, claimes exceptional sample efficiency as it learns a dynamics
+    The PILCO algorithm, from \cite{deisenroth2011pilco}, claims exceptional sample efficiency as it learns a dynamics
     model of a physical cart-pole swing-up. It applies a policy gradient inference, but incorporates the variance of
-    policy parameters into the policy synthesis, and modeling the dynamics as Gaussian Proccesses.
+    policy parameters into the policy synthesis by modeling the unknown dynamics as \acp{GP} and using \textit{kriging}
+    \cite{rasmussen2004gaussian}.
+
+    The \ac{pgpe} algorithm from \cite{sehnke2010parameter} combines latent transition model parameters in the policy
+    gradient. This is expanded by \cite{tangkaratt2014model} with a better estimation of the model. The \ac{lscde}
+    method applied assumes a linear combination of transition model parameters and feature functions.
 
     Many of these algorithms have relied on the random-sampling of policy parameters to effectively add entropy to their
     learning process. For instance, \cite{peters2008reinforcement} use a stochastic acceleration policy to control robot
-    manipulator servos. Regularizing the critic's value function with an entropy term, thus putting value on
-    exploration, \cite{nachum2017bridging} does help prevent the actor from converging to a suboptimal policy.
+    manipulator servos. In \ac{pgpe}, the exploration derives from the random sampling of policy parameters from a
+    distribution. Regularizing the critic's value function with an entropy term, thus putting value on exploration
+    \cite{nachum2017bridging}, does help prevent the actor from converging to a suboptimal policy. Entropy
+    regularization works in-practice, but like applying random-restarts to a Q-learning algorithm \color{blue}(need a
+    citation for this!)\color{black}, these are heuristic approaches that do not \textit{guide} exploration in a
+    formulaic approach.
 
-    Our framework applies a an adapted \ac{pgpe} framework, using the policy gradient method from
-    \cite{tangkaratt2014model} and \cite{Sugiyama2015StatisticalRL}. By maximizing the likelihood of a demonstration
-    like \cite{herman2016inverse}, we do not have the variance introduced by the reward function, so
-    baseline-subtraction is not necessary. From a very high level, the procedure that we present has an actor-critic
-    flavor. We infer a policy from demonstration, and then use that inference to determine the value of joint-states. In
-    this way we can passively improve the policy of the controllable agent.
+\subsection{Learning from Demonstration}
 
-    Finally, for a recent survey of \ac{RL} algorithms, see \cite{polydoros2017survey}.
-
-\subsection{Imitation Learning}
-
-    The problem we present, could also be solved with  \textit{inverse}-\ac{RL} or \text{imitation} learning techniques.
-    Generally, these techniques attempt to learn a policy from expert demonstrations, although the
+    The problem we present, could also be solved with  either \textit{inverse}-\ac{RL} or \text{imitation} learning
+    techniques.  Generally, these techniques attempt to learn a policy from expert demonstrations, although the
     \quotationMarks{experts} may be following sub-optimal policies.
 
     Solving the IRL problem often requires an accurate model of the environment to effectively learn the demonstrated
-    reward function and compute a similar performing policy. Recent work in \cite{herman2016inverse} attempts to learn
-    the underlying dynamics while simultaneously solving the IRL problem. For our case, we want to strike a balance
-    between \cite{bandyopadhyay2013intention} and \cite{herman2016inverse}, learning more than enough to simply improve
-    the controllable agents chance at completing the task but not the uncontrollable agents reward or value funciton.
+    reward function and compute a policy that performs similar to the demonstration. Recent work in
+    \cite{herman2016inverse} attempts to learn the underlying dynamics while simultaneously solving the IRL problem.
 
     In an imitation learning approach, the \DAGGER algorithm learns to complete a task in a supervised fashion with
     \cite{ross2011reduction}. \DAGGER addressed the issue of sample independence as a learning agent adjusts its policy
-    over time.  Given an initial set of trajectories from an expert, the agent queries for expert for more (partial)
-    demonstrations at a diminishing rate over time, and builds up a dataset of trajectories that it repeatedly uses to
-    train its policy.
+    over time.  Given an initial set of trajectories from an expert, the agent queries the expert for more (partial)
+    demonstrations at a diminishing rate over time. Through this combination of demonstrated and imitated policies, the
+    agent builds up a dataset of trajectories that it repeatedly uses to train its policy.
 
 \subsection{Active Learning}
 
@@ -206,50 +220,61 @@
         \item \cite{khamassi2017active}
         \item \cite{andersson2017deep}
         \item \cite{martinez2007active}
+        \item \cite{akiyama2010efficient}
+        \item re-read \cite{andersen2017active}
     \end{itemize}
-    Will include summaries or contributions if applicable.
+    Will include summaries or contributions of these papers if applicable.
 
 
     Gaussian processes might be a good option for generalizing policy dependence on relative position in future work.
 
-\subsection{Novelty of this thesis (better-ize this name)}\label{sec:literature_novelty}
+\section{Contributions of this work}\label{sec:contributions}
 
-    \begin{itemize}
-        \item only observing state-action outcomes similar to \cite{renato} and \cite{lim2013reinforcement}
-            (state-sequences), not state-action-sequences.
+    In Problem \ref{prob:factory_example}, the controllable agent must infer the policy of the uncontrollable agent
+    while it repeatedly completes its task. There are many \ac{RL} algorithms that can be adapted to a policy inference
+    task, while others serve as inspiration but share common aspects. For our case, we want to strike a balance between
+    \cite{bandyopadhyay2013intention} and \cite{herman2016inverse}, learning more than enough to simply improve the
+    controllable agent's policy but not the uncontrollable agents reward or value funciton.
 
-        \item less conservative than mini-max, we don't rule out the possiblility that the other agent is actually
-            helping us complete the main objective.
-        \item use novel Gaussian policy approximation for policy inference
-        \item provide an exploration bonus reward that accelerates data gathering for the best
-            inference.
-        \item We parameterize the policy using a set of basis functions that reduce the dimensionality of the required
-            inference from $|S|\times|A|$ to $|K|\times|A|$ where $|K|$ is the number of kernels used. Each action at
-            each kernel receives a basis function.
-        \item On stationarity: In the batch framework, the robot policy is fixed for each batch, making those sampled
-            trajectories i.i.d.. If, the environmental policy was allowed to change between each batch, then the mean
-            and variances of the parameters would adjust accordingly, allowing this algorithm to transcend the bounds we
-            have initially given it.
+    For our experiment, we'll assume that the uncontrollable agent operates in the same environment as the controllable
+    agent; it is subject to the same stochastic transition model. We'll formally state later that we require the
+    uncontrollable policy to be stationary. This allows us to use the \ac{HiPMDP} as a foundation. The goal of modeling
+    with a \ac{HiPMDP} is to learn or infer a set of parameters that describe the transition function of the
+    controllable agent so that it can optimally plan to earn rewards. In this work, the parameters will describe the
+    policy of the uncontrollable agent, since the actions of the uncontrollable agent affect the joint state of the
+    system. Thus, learning the policy of the uncontrollable agent equates to learning a parameter vector in the
+    transition model that the controllable agent must know to optimally plan.
 
-        \item We extend a Q-function approximation that is a linear combination of normal distributions and learn the
-            first and second moments of these distributions, from \cite{tangkaratt2014model}. The extension is that we
-            feedback the second moment of each distribution to induce exploration and improve the data used for the next
-            mini-batch of trajectories.
-        \item Generally \ac{HiPMDP}s assume some prior distribution of the parameters. There is a trade-off between too
-            many parameters increasing computational costs, and the generalization error induced by too few parameters.
-            By propagating the second-moment of each parameter distribution we can more effectively identify extraneous
-            parameters, as well as parameters that are unknown and may, or may not, be necessary.
-        \item we improve over \Rmax by not valuing every exploration step equally, but preferentially exploring some
-            more informative states.
+    From a very high level, the procedure that we present has an actor-critic flavor. We infer a policy from
+    demonstration (effectively part of the transition model), and then use that inference to determine the value of
+    joint-states. In this way we can passively improve the policy of the controllable agent. By only updating the policy
+    after collecting a batch of interactive trajectories like \cite{doshi2016hidden}, we still achieve
+    sample-independence.
 
-         \item \cite{doshi2016hidden} uses a batch-inference, we use mini-batch?
+    This work adapts the policy gradient formulation of \cite{herman2016inverse} and an uncontrollable policy
+    parameterization from \cite{tangkaratt2014model} with an aditional temperature parameter from
+    \cite{nachum2017bridging}.  By maximizing the likelihood of a demonstration like \cite{herman2016inverse}, we do not
+    have the variance introduced by the reward function, so baseline-subtraction is not necessary.
 
-         \item There are also parallels to imitation learning, but we now have a feedback path that determines the
-             states where an agent would need assistance, instead of the heuristic methods used in DAGGER.
+    To promote the most informative exploration, we introduce a novel Gaussian parameter approximation to use for policy
+    inference. We extend a Q-function approximation from \cite{Sugiyama2015StatisticalRL} to be a linear combination of
+    normal distributions and features. By infering the first and second moments of these distributions, we propagate the
+    parameter variance to create a feedback path to the policy-synthesis step. This formulation has similarities to the
+    variance computed in \ac{pgpe} from \cite{tangkaratt2014model} and allows the controllable agent to actively seek
+    interaction with the uncontrollable agent. This accelerates the inference procedure and allows the controllable
+    agent to eventually compute an optimal plan for its task.
 
-         \item Many implementations of \ac{pgpe} parameterize the policy as drawn from a normal distribution, with a
-             mean value
 
-    \end{itemize}
+    Unlike, \cite{lim2013reinforcement} and \cite{bertuccelli2012robust}, we do not limit the case to adversaries; there
+    is a chance that the uncontrollable agent will help earn rewards. The exploration method, as well as  the
+    decomposition of the joint-state-action space into a collection of features, doesn't require the system to
+    explicitly visit every joint-state like \Rmax. We transfer the parameter distribution information between batches,
+    and, therefore do not require the continual growth of the dataset like \DAGGER. Finally, there also parallels to
+    imitation learning. If the controllable agent can request a demonstration from the uncontrollable agent, we can
+    algorithmically determine the best request. This is in contrast to the hyper-parameters used by \DAGGER to gradually
+    decay the number of demonstrations requests.
 
+    The final point to note is that most \ac{RL} algorithms can record which actions the agent took and observe state
+    transitions, assuming the problem is not a \ac{POMDP}. Like \cite{lim2013reinforcement}, our inference is only based
+    upon state-sequences, not \textit{state-acation} sequences.
 
