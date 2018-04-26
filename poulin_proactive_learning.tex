@@ -50,8 +50,9 @@
 \usepackage{acro}
 \usepackage{setspace}
 \usepackage{graphicx}
-\usepackage[]{algorithm2e}
+%\usepackage[]{algorithm2e}
 %\usepackage{algpseudocode}
+\usepackage{algpseudocode,algorithm,algorithmicx}
 \usepackage{amsmath, amsfonts, amssymb, amsthm}
 \usepackage{bm}
 \usepackage{todonotes}
@@ -297,7 +298,7 @@ Chair \rule{3in}{0.8pt} Date \rule{1in}{0.8pt}
 
 % Break the report into external files using one for each chapter. Each chapter file should start with the `\chapter{}`
 % command. Note that the chapter command starts a new page, as does the `\include{}` command.
-\graphicspath{{ch1_images/} {ch2_images/} {ch3_images/} {ch4_images/}}
+\graphicspath{{ch1_images/} {ch2_images/} {ch3_images/} {ch4_images/} {appendix_images/}}
 
 \include{chapter_1}
 \include{chapter_2}
@@ -308,11 +309,8 @@ Chair \rule{3in}{0.8pt} Date \rule{1in}{0.8pt}
 % Appendices are automatically numbered, just like everything else in
 % LaTeX. But only after you gave this command
 %\appendix
-%
-%\chapter{More to say}
-%
-%\section{A section within an appendix.}
-%This is an appendix.
+%\include{appendicies}
+
 %
 %\listoftodos
 % Last and least (at least, that's what the library says) - the
