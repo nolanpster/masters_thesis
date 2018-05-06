@@ -243,7 +243,7 @@ Here, we'll show that we can accelerate the convergence of $\estimate{\policy{}}
 	\label{table:single_agent_active_hyper_params}
 \end{table}
 
-If $\mathsf{do\_active\_update}=\mathsf{True}$, we'll consider that trial of Alg. \ref{alg:single_agent_batch} to be \emph{active}, otherwise, it was \emph{passive} inference. Figure \ref{fig:single_agent_active_error} shows that updating the initial distribution with Eq. \ref{eq:active_initial_set} produces faster convergence to a minimum inference error. The solid lines represent the average $\InfNorm{\policy{2},\estimate{\policy{}}_2}$ over $50$ trials.
+If $\mathsf{do\_active\_update}=\mathsf{True}$, we'll consider that trial of Alg. \ref{alg:single_agent_batch} to be \emph{active}, otherwise, it was \emph{passive} inference. Figure \ref{fig:single_agent_active_error} shows that updating the initial distribution with Eq. \ref{eq:active_initial_set} produces faster convergence to a minimum inference error. The solid lines represent the average $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ over $50$ trials.
 
 
 
@@ -252,7 +252,7 @@ If $\mathsf{do\_active\_update}=\mathsf{True}$, we'll consider that trial of Alg
 		\fbox{
 			\begin{minipage}{0.75\textwidth}
 				\includegraphics[width=\textwidth]{single_agent_active_inf_norm}
-				\caption{50 trial average: Fraction of max $\InfNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table}
+				\caption{50 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table}
 				\label{fig:single_agent_active_error}
 			\end{minipage}
 		}
@@ -293,7 +293,7 @@ To show this assertion, we'll rerun the single-agent \emph{active}$/$\emph{passi
 		\fbox{
 			\begin{minipage}{0.75\textwidth}
 				\includegraphics[width=\textwidth]{single_agent_passive_inf_norm}
-				\caption{50 trial average: Fraction of max $\InfNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm parameters in Table \ref{table:single_agent_active_alg_params_long}.}
+				\caption{50 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm parameters in Table \ref{table:single_agent_active_alg_params_long}.}
 				\label{fig:single_agent_passive_error}
 			\end{minipage}
 		}
@@ -397,7 +397,7 @@ sufficiently represented with an optimal parameter.  The author formally proves 
 
 	For this experiment, we're interested in a configuration where \agent{1} and \agent{2} are essentially forced to interact. The initial state for \agent{1} will always be the \emph{South-East} (lower-left) corner, cell $24$. Its goal is to reach the \emph{North-West} (upper-left) corner, cell $0$. Similar to the multi-agent experiment in Section \ref{sec:multi_agent_inference_experiment}, \agent{2} will be trying to reach the \emph{North-East} (upper-right) corner, cell $4$. In this experiment, \agent{2} will always start in the \emph{South-West} (lower-left) corner, cell $20$. The transition model is deterministic, actions succeed with probability 1. Also, a collision results in a sink-state. The transition to a sink-state is known to \agent{1}, so it tries to avoid \agent{2} in general but the inclusion of the bonus-reward does affect that slightly.
 	
-	The bonus-reward coerces \agent{1} to make sub-optimal actions so that an informative joint-state is reached, \agent{2} makes informative actions, and the $\InfNorm{\policy{2},\estimate{\policy{}}_2}$ converges faster than with the passive approach; see Figure \ref{fig:multi_agent_active_error}
+	The bonus-reward coerces \agent{1} to make sub-optimal actions so that an informative joint-state is reached, \agent{2} makes informative actions, and the $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ converges faster than with the passive approach; see Figure \ref{fig:multi_agent_active_error}
 
     \begin{table}[htb]
 	\centering
@@ -438,7 +438,7 @@ sufficiently represented with an optimal parameter.  The author formally proves 
 		\fbox{
 			\begin{minipage}{0.75\textwidth}
 				\includegraphics[width=\textwidth]{multi_agent_active_inf_norm}
-				\caption{50 trial average: Fraction of max $\InfNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm parameters in Table \ref{table:multi_agent_active_alg_params}.}
+				\caption{50 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm parameters in Table \ref{table:multi_agent_active_alg_params}.}
 				\label{fig:multi_agent_active_error}
 			\end{minipage}
 		}
@@ -459,6 +459,6 @@ sufficiently represented with an optimal parameter.  The author formally proves 
 \end{figure}
 
 \subsubsection{Discussion}
-\todo[inline]{Add plot of $\InfNorm{\optimal{\policy{1}}, \policy{1}^b}$ and discuss}
+\todo[inline]{Add plot of $\OneNorm{\optimal{\policy{1}}, \policy{1}^b}$ and discuss}
 
 

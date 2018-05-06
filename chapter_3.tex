@@ -260,7 +260,7 @@ Using the observed data-set described by Table \ref{table:multi_agent_data_set} 
 
 The error metric plotted in Fig. \ref{fig:multi_agent_error_25_kernels} is now the fraction of the maximum possible $\text{L}_{\infty}$-norm. That is, for each iteration $n$,
 \[
-	Error(n) = \frac{\InfNorm{\policy{2},\estimate{\policy{}}_2}}{2|S|}.
+	Error(n) = \frac{\OneNorm{\policy{2},\estimate{\policy{}}_2}}{2|S|}.
 \]
 With this, we can represent the likelihood of $\estimate{\policy{}}_2$ selecting different actions at each joint state $s$ from the true \policy{2}. For instance, if $Error(n)==1$, the $\estimate{\policy{2}}$ will select a different action every time. Recognize that there are infinitely many softmax policies that have $Error(n)==1$, and a finite number of hardmax policies with this upper error value.
 
@@ -315,7 +315,7 @@ Given that $W \ll |S|\times |A|$, the inference result in Fig. \ref{fig:multi_ag
 		\fbox{
 			\begin{minipage}{0.75\textwidth}
 				\includegraphics[width=\textwidth]{error_multi_agent_25K}
-				\caption{Fraction of max $\InfNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table
+				\caption{Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table
 					\ref{table:multi_agent_hyper_params}.}
 				\label{fig:multi_agent_error_25_kernels}
 			\end{minipage}

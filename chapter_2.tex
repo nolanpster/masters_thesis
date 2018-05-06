@@ -286,7 +286,7 @@
         There exists an optimal parameter vector that can represent the true distribution of $\policy{2}(s)$ to within a
         threshold $\xi$, given that a set of basis functions are properly defined;
         \[
-            \exists\ \optimal{\paramVec}\ \Big|\  \InfNorm{\estimate{\policy{}}_2(s;\optimal{\paramVec}),\policy{2}(s)}
+            \exists\ \optimal{\paramVec}\ \Big|\  \OneNorm{\estimate{\policy{}}_2(s;\optimal{\paramVec}),\policy{2}(s)}
                 \leq \xi.
         \]
     \end{assumption}
@@ -294,7 +294,7 @@
     \noindent
     The infinite $\mathsf{L_{\infty}}$-norm between two policies,
     \[
-        \InfNorm{\policy{x}(s),\policy{y}(s)} = \sum_{s \in S}\sum_{a \in A}\policy{x}(a|s)-\policy{y}(a|s),
+        \OneNorm{\policy{x}(s),\policy{y}(s)} = \sum_{s \in S}\sum_{a \in A}\policy{x}(a|s)-\policy{y}(a|s),
     \]
     is a measurable distance unlike \ac{KLD}; $\text{KL}(p||q) \neq \text{KL}(q||p)$. For all following experiments,
     we'll use the $\mathsf{L_{\infty}}$-norm to compare two policies.
@@ -592,7 +592,7 @@
                 \fbox{
                         \begin{minipage}{0.75\textwidth}
                                 \includegraphics[width=\textwidth]{L1Norm_25K_temp_0_1}
-                                \caption{$\InfNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table
+                                \caption{$\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table
                                         \ref{table:single_agent_hyper_params}.}
                                 \label{fig:single_agent_L1Norm_25_kernels}
                         \end{minipage}
@@ -679,7 +679,7 @@ $\mathsf{L}_{\infty}\text{-norm} \approx 6.5$. There is some obvious generalizat
 		\fbox{
 			\begin{minipage}{0.75\textwidth}
 				\includegraphics[width=\textwidth]{Linf_norm_single_agent_7K}
-				\caption{$\InfNorm{\policy{2},\estimate{\policy{2}}}$ with parameters in Table
+				\caption{$\OneNorm{\policy{2},\estimate{\policy{2}}}$ with parameters in Table
 					\ref{table:single_agent_new_hyper_params}.}
 				\label{fig:single_agent_L1Norm_7_kernels}
 			\end{minipage}
