@@ -93,9 +93,9 @@
     are often a function of a reward function.
 
 \subsubsection{Value Functions}
-    Following \cite{hernandez2012adaptive} and \cite{Sugiyama2015StatisticalRL}, the value of a state $s$ is defined as the
-    expectation over all discounted future rewards that could be earned from $s$. For an arbitrary, single-agent \ac{MDP},
-    if an agent \agent{i} follows a policy \policy{i}:
+    Following \cite{hernandez2012adaptive} and \cite{Sugiyama2015StatisticalRL}, the value of a state $s$ is defined as
+    the expectation over all discounted future rewards that could be earned from $s$. For an arbitrary, single-agent
+    \ac{MDP}, if an agent \agent{i} follows a policy \policy{i}:
     \[
     V_{\policy{i}}(s) = \expectation{\policy{i}}{\sum_{t=0}^{\infty} \gamma^t R\left((s,a_i)^{(t)}\right)
             \bigg|s^{(t)}=s}.
@@ -253,9 +253,9 @@
         \end{equation*}
 
         \noindent
-        where $P(\traj_d|\mathcal{D})$ is the maximum likelihood probability of the state sequence, and $P(\traj_d|\paramVec)$ is
-        the probability of obtaining that state sequence by our inferred policy that is parameterized by the vector
-        \paramVec.
+        where $P(\traj_d|\mathcal{D})$ is the maximum likelihood probability of the state sequence, and
+        $P(\traj_d|\paramVec)$ is the probability of obtaining that state sequence by our inferred policy that is
+        parameterized by the vector \paramVec.
 
         Minimizing the deviation of $q_{\paramVec}$ from $p$ is equivalent to maximizing the expectation of the
         observing $D$, given that the environment actions are distributed as $\policy{2}(s; \paramVec)$:
@@ -415,9 +415,9 @@
     ``velocity'' of each gradient is stored in $\dot{\vect{\mu}}_n$ and $\dot{\vect{\nu}}_n$, respectively.
 
     \begin{remark}\label{rem:graidient_variability}
-	    We do notice that the gradient variability is also a function of the size of $D$, as concluded by
-    	\cite{tangkaratt2014model}. Therefore the step size, $\lambda$, is a hyper-parameter that is dependent on the
-    	experiment.
+            We do notice that the gradient variability is also a function of the size of $D$, as concluded by
+        \cite{tangkaratt2014model}. Therefore the step size, $\lambda$, is a hyper-parameter that is dependent on the
+        experiment.
     \end{remark}
 
 
@@ -462,8 +462,9 @@
     The motion resulting from an action $a_2$ is stochastic; the intended motion is actually executed with a probability
     of $0.8$, and there is a probability of $0.1$ of sliding in the two perpendicular motion directions. The exception
     is the $Empty$ action which results in a $Stay$ motion with probability $1$. The boarders of the grid-world are
-    considered to be walls. If the resulting motion would cause the agent to leave the grid then $Stay$ is selected, $s'=s$.
-    Table \ref{table:motion_model} clarifies the motion model for the $East$ action based on the starting cell location.
+    considered to be walls. If the resulting motion would cause the agent to leave the grid then $Stay$ is selected,
+    $s'=s$.  Table \ref{table:motion_model} clarifies the motion model for the $East$ action based on the starting cell
+    location.
 
     \begin{table}[h!]
         \centering
@@ -485,10 +486,11 @@
 
     The \textit{hidden} policy of \agent{2} is visualized in Fig. \ref{fig:single_agent_2_policy}. The policy is
     deterministic, $\kappa=0$, and the agent has a hidden goal of the yellow cell. The red cells are obstacles, are
-    \textit{not} hidden, and are sink states. The \acf{SP} in metric from a cell to a kernel center, Eq. \ref{eq:kernel_func}, accounts for the distance around known obstacles. Arrows represent the direction an action is selected with probability $1$,
-    and dots represent that the $Empty/Stay$ action is selected with probability $1$. A demonstration set $D$ is
-    generated with a uniform initial distribution $s^{(0)} \sim \mathcal{U},\ \forall \traj_d \in D$. The state
-    visitation count for the example $D$ is visualized in Fig. \ref{fig:single_agent_demo}
+    \textit{not} hidden, and are sink states. The \acf{SP} in metric from a cell to a kernel center, Eq.
+    \ref{eq:kernel_func}, accounts for the distance around known obstacles. Arrows represent the direction an action is
+    selected with probability $1$, and dots represent that the $Empty/Stay$ action is selected with probability $1$. A
+    demonstration set $D$ is generated with a uniform initial distribution $s^{(0)} \sim \mathcal{U},\ \forall \traj_d
+    \in D$. The state visitation count for the example $D$ is visualized in Fig. \ref{fig:single_agent_demo}
 
     \begin{figure}[htb]
         \begin{center}
@@ -517,10 +519,11 @@
     \end{figure}
 
     \subsection{Experiment Hyper-parameters}
-    To approximate the $Q$-function of \agent{2}, per Section \ref{sec:policy_parameterization}, let's start
-    by placing a kernel centered at every grid cell. This sets $W=|S|\times A$, but it's a good test. See Fig.
-    \ref{fig:kernel_visualization} for a visualization of how the the kernel function values, $k(s,a_2)$, at each state
-    are mapped to the feature vector-function $\featFunc$. We'll set the following parameters:
+    To approximate the $Q$-function of \agent{2}, per Section \ref{sec:policy_parameterization}, let's start by placing
+    a kernel centered at every grid cell. This sets $W=|S|\times A$, which is an unrealistic number of parameters but
+    it's a good test. See Fig.  \ref{fig:kernel_visualization} for a visualization of how the the kernel function
+    values, $k(s,a_2)$, at each state are mapped to the feature vector-function $\featFunc$. We'll set the following
+    parameters:
 
     \begin{table}[H]
         \centering
@@ -541,14 +544,14 @@
     \end{table}
 
     \begin{table}[H]
-	\centering
-	\begin{tabular}{c|l l}
-		$|\traj|$ & $10$ & Number of steps in a trajectory \\
-		$|D|$ & $5000$ & Number of trajectories observed \\
-		$I_0$ & $\mathcal{U}(0,24)$ & Uniform distribution of $s_2^{(0)}$ \\
-	\end{tabular}
-	\caption{Observed data for single agent inference.}
-	\label{table:single_agent_data_set}
+        \centering
+        \begin{tabular}{c|l l}
+                $|\traj|$ & $10$ & Number of steps in a trajectory \\
+                $|D|$ & $5000$ & Number of trajectories observed \\
+                $I_0$ & $\mathcal{U}(0,24)$ & Uniform distribution of $s_2^{(0)}$ \\
+        \end{tabular}
+        \caption{Observed data for single agent inference.}
+        \label{table:single_agent_data_set}
 \end{table}
 
     \begin{figure}[h]
@@ -557,33 +560,40 @@
         \label{fig:kernel_visualization}
     \end{figure}
 
-    \subsubsection{Algorithm bounds}
+\subsubsection{Algorithm bounds}
 
-    As noted in footnote 2 of \cite{williams1992simple}, there is not gradient stepsize, $\lambda$ (this reports notation), that will keep the parameter variance elements $\nu_w >0$. Our remedy is to enforce a lower bound on the covariance of $\rho_n$ after each gradient update in Eq. \ref{eq:gradient_update}:
+    As noted in footnote 2 of \cite{williams1992simple}, there is not gradient stepsize, $\lambda$ (this reports
+    notation), that will keep the parameter variance elements $\nu_w >0$. Our remedy is to enforce a lower bound on the
+    covariance of $\rho_n$ after each gradient update in Eq. \ref{eq:gradient_update}:
     \begin{equation}\label{eq:param_var_bounds}
     \nu_{min} \leq \vect{\nu}_n,\ \forall \nu_w \in \vect{\nu}_n.
     \end{equation}
 
-	\subsection{Results}\label{sec:single_agent_25K_results}
-	Our Assumption
-    \ref{assump:opt_policy_err} is verified by Figures \ref{fig:single_agent_logLike_25_kernels} and
-    \ref{fig:single_agent_L1Norm_25_kernels}. The recorded $\mathsf{L}_{\infty}$-norm was neither used during gradient ascent,
-    nor as a termination criteria. Note that the final $\mathsf{L}_\infty\text{-norm} \approx 0.7$. This final
-    error has a range of about $[0.01-5]$ with these parameters over different trials.	We can also examine the dynamics of the distribution $\rho$ as well, see Figures \ref{fig:smooth_gradient_dynamics_mu} and \ref{fig:smooth_gradient_dynamics_nu}.
-    
-    Note that the legend entry ``$\max_{i \in m}\tilde{\mathcal{L}}_n(D|\mathbf{\theta}^{(i)})$" represents the \emph{sampled} parameter vector that maximizes the log-likelihood of $D$ at the iteration $n$. The policy estimate $\estimate{\pi}_2(\estimate{\paramVec})$ is constructed using $\mu_N$, the mean vect of the multi-variate distribution $\rho$ at the final iteration, $N$.
-    
-    As the iterations progress, notice that the parameter variances decrease in Fig. \ref{fig:single_agent_7K_nu}, implying that the value of of each parameter is known with more confidence.
+\subsection{Results}\label{sec:single_agent_25K_results}
+    Our Assumption \ref{assump:opt_policy_err} is verified by Figures \ref{fig:single_agent_logLike_25_kernels} and
+    \ref{fig:single_agent_L1Norm_25_kernels}. The recorded $\mathsf{L}_{\infty}$-norm was neither used during gradient
+    ascent, nor as a termination criteria. Note that the final $\mathsf{L}_\infty\text{-norm} \approx 0.7$. This final
+    error has a range of about $[0.01-5]$ with these parameters over different trials.  We can also examine the dynamics
+    of the distribution $\rho$ as well, see Figures \ref{fig:smooth_gradient_dynamics_mu} and
+    \ref{fig:smooth_gradient_dynamics_nu}.
+
+    Note that the legend entry ``$\max_{i \in m}\tilde{\mathcal{L}}_n(D|\mathbf{\theta}^{(i)})$" represents the
+    \emph{sampled} parameter vector that maximizes the log-likelihood of $D$ at the iteration $n$. The policy estimate
+    $\estimate{\pi}_2(\estimate{\paramVec})$ is constructed using $\mu_N$, the mean vect of the multi-variate
+    distribution $\rho$ at the final iteration, $N$.
+
+    As the iterations progress, notice that the parameter variances decrease in Fig. \ref{fig:single_agent_7K_nu},
+    implying that the value of of each parameter is known with more confidence.
 
     \begin{figure}[H]
         \begin{center}
-                \fbox{
-                        \begin{minipage}{0.75\textwidth}
-                                \includegraphics[width=\textwidth]{logLike_25K_temp_0_1}
-                                \caption{$\tilde{\logLike}(D|\rho)$ with parameters in Table \ref{table:single_agent_hyper_params}.}
-                                \label{fig:single_agent_logLike_25_kernels}
-                        \end{minipage}
-                }
+            \fbox{
+                \begin{minipage}{0.75\textwidth}
+                    \includegraphics[width=\textwidth]{logLike_25K_temp_0_1}
+                    \caption{$\tilde{\logLike}(D|\rho)$ with parameters in Table \ref{table:single_agent_hyper_params}.}
+                    \label{fig:single_agent_logLike_25_kernels}
+                \end{minipage}
+            }
         \end{center}
     \end{figure}
 
@@ -601,36 +611,40 @@
     \end{figure}
 
 
- 	\begin{figure}[H]
-		\begin{center}
-			\fbox{
-				\begin{minipage}{0.75\textwidth}
-					\includegraphics[width=\textwidth]{smooth_grad_descent_mu}
-					\caption{$\mu_w$ for each iteration with parameters in Table
-						\ref{table:single_agent_hyper_params}.}
-					\label{fig:smooth_gradient_dynamics_mu}
-				\end{minipage}
-			}
-		\end{center}
-	\end{figure}
+        \begin{figure}[H]
+                \begin{center}
+                        \fbox{
+                                \begin{minipage}{0.75\textwidth}
+                                        \includegraphics[width=\textwidth]{smooth_grad_descent_mu}
+                                        \caption{$\mu_w$ for each iteration with parameters in Table
+                                                \ref{table:single_agent_hyper_params}.}
+                                        \label{fig:smooth_gradient_dynamics_mu}
+                                \end{minipage}
+                        }
+                \end{center}
+        \end{figure}
 
- 	\begin{figure}[H]
-	\begin{center}
-		\fbox{
-			\begin{minipage}{0.75\textwidth}
-				\includegraphics[width=\textwidth]{smooth_grad_descent_nu}
-				\caption{$\nu_w$ for each iteration with parameters in Table
-					\ref{table:single_agent_hyper_params}.}
-				\label{fig:smooth_gradient_dynamics_nu}
-			\end{minipage}
-		}
-	\end{center}
-	\end{figure}
+        \begin{figure}[H]
+        \begin{center}
+                \fbox{
+                        \begin{minipage}{0.75\textwidth}
+                                \includegraphics[width=\textwidth]{smooth_grad_descent_nu}
+                                \caption{$\nu_w$ for each iteration with parameters in Table
+                                        \ref{table:single_agent_hyper_params}.}
+                                \label{fig:smooth_gradient_dynamics_nu}
+                        \end{minipage}
+                }
+        \end{center}
+        \end{figure}
 
     \subsection{Experiment with Fewer Kernels}
 
-	Note that if we use $K=7$, and use the parameters in Table \ref{table:single_agent_new_hyper_params}, we can achieve a final
-$\mathsf{L}_{\infty}\text{-norm} \approx 6.5$. There is some obvious generalization error in the inferred policy shown in Fig. \ref{fig:single_agent_policy_7_kernels}. Note that the grid-cells with blue circles in them note only that a kernel is centered at that location, the circle is not proportional to $\kernStdDev_{\kernIdx}$. Also, the magnitudes of the circles and arrows are proportional to the probability of selecting that action; the yellow cell is in the most North-East cell.
+        Note that if we use $K=7$, and use the parameters in Table \ref{table:single_agent_new_hyper_params}, we can
+        achieve a final $\mathsf{L}_{\infty}\text{-norm} \approx 6.5$. There is some obvious generalization error in the
+        inferred policy shown in Fig. \ref{fig:single_agent_policy_7_kernels}. Note that the grid-cells with blue
+        circles in them note only that a kernel is centered at that location, the circle is not proportional to
+        $\kernStdDev_{\kernIdx}$. Also, the magnitudes of the circles and arrows are proportional to the probability of
+        selecting that action; the yellow cell is in the most North-East cell.
 
 \todo[inline]{Format this table similar to Table \ref{table:single_agent_hyper_params}.}
     \begin{table}[H]
@@ -650,41 +664,43 @@ $\mathsf{L}_{\infty}\text{-norm} \approx 6.5$. There is some obvious generalizat
     \end{table}
 
     \begin{figure}[htb]
-	\begin{center}
-		\fbox{
-			\begin{minipage}{0.75\textwidth}
-				\includegraphics[width=\textwidth]{single_agent_learned_7Kernels}
-				\caption{$\estimate{\policy{}}_{2}$ with parameters in Table \ref{table:single_agent_new_hyper_params}.}
-				\label{fig:single_agent_policy_7_kernels}
-			\end{minipage}
-		}
-	\end{center}
-	\end{figure}
+        \begin{center}
+            \fbox{
+                \begin{minipage}{0.75\textwidth}
+                    \includegraphics[width=\textwidth]{single_agent_learned_7Kernels}
+                    \caption{$\estimate{\policy{}}_{2}$ with parameters in Table
+                             \ref{table:single_agent_new_hyper_params}.}
+                    \label{fig:single_agent_policy_7_kernels}
+                \end{minipage}
+            }
+        \end{center}
+    \end{figure}
 
     \begin{figure}[htb]
         \begin{center}
-                \fbox{
-                        \begin{minipage}{0.75\textwidth}
-                                \includegraphics[width=\textwidth]{Loglike_single_agent_7K}
-                                \caption{$\tilde{\logLike}(D|\rho)$ with parameters in Table \ref{table:single_agent_new_hyper_params}.}
-                                \label{fig:single_agent_logLike_7_kernels}
-                        \end{minipage}
-                }
+            \fbox{
+                \begin{minipage}{0.75\textwidth}
+                    \includegraphics[width=\textwidth]{Loglike_single_agent_7K}
+                    \caption{$\tilde{\logLike}(D|\rho)$ with parameters in Table
+                             \ref{table:single_agent_new_hyper_params}.}
+                    \label{fig:single_agent_logLike_7_kernels}
+                \end{minipage}
+            }
         \end{center}
     \end{figure}
 
 
     \begin{figure}[H]
-	\begin{center}
-		\fbox{
-			\begin{minipage}{0.75\textwidth}
-				\includegraphics[width=\textwidth]{Linf_norm_single_agent_7K}
-				\caption{$\OneNorm{\policy{2},\estimate{\policy{2}}}$ with parameters in Table
-					\ref{table:single_agent_new_hyper_params}.}
-				\label{fig:single_agent_L1Norm_7_kernels}
-			\end{minipage}
-		}
-	\end{center}
+        \begin{center}
+                \fbox{
+                        \begin{minipage}{0.75\textwidth}
+                                \includegraphics[width=\textwidth]{Linf_norm_single_agent_7K}
+                                \caption{$\OneNorm{\policy{2},\estimate{\policy{2}}}$ with parameters in Table
+                                        \ref{table:single_agent_new_hyper_params}.}
+                                \label{fig:single_agent_L1Norm_7_kernels}
+                        \end{minipage}
+                }
+        \end{center}
 \end{figure}
 
     \begin{figure}[htb]
@@ -702,16 +718,16 @@ $\mathsf{L}_{\infty}\text{-norm} \approx 6.5$. There is some obvious generalizat
 
 
     \begin{figure}[htb]
-	\begin{center}
-		\fbox{
-			\begin{minipage}{0.75\textwidth}
-				\includegraphics[width=\textwidth]{grad_descent_nu_7K}
-				\caption{$\nu_w$ with parameters in Table
-					\ref{table:single_agent_new_hyper_params}.}
-				\label{fig:single_agent_7K_nu}
-			\end{minipage}
-		}
-	\end{center}
+        \begin{center}
+                \fbox{
+                        \begin{minipage}{0.75\textwidth}
+                                \includegraphics[width=\textwidth]{grad_descent_nu_7K}
+                                \caption{$\nu_w$ with parameters in Table
+                                        \ref{table:single_agent_new_hyper_params}.}
+                                \label{fig:single_agent_7K_nu}
+                        \end{minipage}
+                }
+        \end{center}
 \end{figure}
 
 
