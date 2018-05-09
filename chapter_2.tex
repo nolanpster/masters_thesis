@@ -14,11 +14,11 @@
     agent given its current state is known as \textit{policy-inference}. The following definitions formally present a
     hidden policy in \iac{MDP}.
 
-    After defining the hidden-parameter MDP, this chapter presents an inference method that uses Monte-Carlo integration
+    After defining the Hidden-Parameter MDP, this chapter presents an inference method that uses Monte-Carlo integration
     of policy parameters sampled from a multivariate distribution. We'll use \ac{SGA} to improve the log-likelihood of
     an observed set of data given a policy parameterization. Section \ref{sec:policy_parameterization} details a
     $Q$-function approximation which is used to form a softmax policy like in \cite{nachum2017bridging}, also known as a
-    Boltzman \cite{Hanawal2017LearningPolicies} and a Gibbs \cite{Sugiyama2015StatisticalRL} policy.
+    Boltzman \cite{Hanawal2017LearningPolicies} or a Gibbs \cite{Sugiyama2015StatisticalRL} policy.
 
 \section{Hidden-parameter MDP}\label{sec:hipmdp}
     \begin{definition}\label{def:hipmdp}
@@ -87,7 +87,7 @@
 \section{Unknown Policy Parameterization}
 
 \subsection{Preliminaries}\label{sec:policy_iteration_preliminaries}
-    The parameterization for \policy{2} requires a an understanding of how a reward function, $R$, influences the
+    The parameterization for \policy{2} requires an understanding of how a reward function, $R$, influences the
     optimal action distribution at a state $s$. Although we do not wish to learn the reward function of \agent{2}, we
     will build approximations of the \textit{value} and \textit{state-action value} functions used by \agent{2}. These
     are often a function of a reward function.
@@ -107,8 +107,8 @@
     \]
 
 \subsubsection{State-action Value (Q) Functions}
-    Likewise, the value of an action at a particular state is the expected discounted future reward following policy
-    \policy{i}:
+    Likewise, the value of an action at a particular state is the expected discounted future reward that could be earned
+    by following policy \policy{i}:
     \[
     Q_{\policy{i}}(s,a_i) = \expectation{\policy{i}}{\sum_{t=0}^{\infty} \gamma^t R\left((s,a_i)^{(t)}\right)
             \bigg|s^{(t)}=s, a_i^{(t)}=a_i}.
@@ -116,23 +116,25 @@
 
 
 \subsection{Q-function Approximation}\label{sec:policy_parameterization}
-    The model of $\policy{2}(s; \paramVec)$ approximates the \textit{state-action value function}, $Q(s,a_2)$, with a
-    linear-in-parameter model. Sugiyama describes this model in detail in Section 2.2.1 of
-    \cite{Sugiyama2015StatisticalRL}, it is also used by \cite{Hanawal2017LearningPolicies}. It is advantageous that
-    \agent{1} does not need to learn the reward function of \agent{2}, but only the distribution of \agent{2}'s action
-    given the joint state set, $\policy{2}(s),\ s\in S$. Each parameter element determines the weighting of a feature
-    $\phi : S \times A_2 \rightarrow \reals$. If a total of $\paramLen$ features are used then \agent{2}'s
-    \textit{Q}-function is approximated as
+    To build an estimate of \agent{2}'s policy, $\estimate{\policy{}}_2$,  we'll parameterize \agent{2}'s
+    \textit{state-action value function}, $Q(s,a_2)$, with a linear-in-parameter model. Sugiyama describes this model in
+    detail in Section 2.2.1 of \cite{Sugiyama2015StatisticalRL}, it is also used by \cite{Hanawal2017LearningPolicies}
+    and \cite{akiyama2010efficient}. It is advantageous that \agent{1} does not need to learn the reward function of
+    \agent{2}, but only the distribution of \agent{2}'s action given the joint state set, $\policy{2}(s),\ s\in S$. Each
+    parameter element determines the weighting of a feature $\phi : S \times A_2 \rightarrow \reals$. If a total of
+    $\paramLen$ features are used then \agent{2}'s \textit{Q}-function is approximated as
     \begin{equation*}\label{eq:QFuncApprox}
     Q(s,a_2) \approx \estimate{Q}(s,a_2)
     = \sum_{\paramIdx=1}^{\paramLen} \estimate{\paramSym}_{\paramIdx} \featElem(s,a_2)
     = \estimate{\paramVec}^\top \featFunc.
     \end{equation*}
+    The estimated parameter vector, \estimate{\paramVec}, represents feature weightings that must be learned for the
+    best estimate of the \emph{Q}-function.
 
     Following Chapter 3 of \cite{Sugiyama2015StatisticalRL}, we'll use \acp{GGK} because they intuitively incorporate
     any obstacles\footnotemark\ that exist in $S$ into a distance metric between a state $s$, and the center of a
     \ac{GGK}, $c$. Consider the state-graph of $\mathcal{M}$. If there are $K$ kernels, and the $l$-th kernel has center
-    $c$, then the value of the kernel at a state $s$ is
+    $c_l$, then the value of the kernel at a state $s$ is
     \begin{equation*}
         \kernFunc(s,\kernCent_{\kernIdx}) = \exp \left( \frac{-\text{SP}(s,\kernCent_{\kernIdx})^2}
                                                              {2\kernStdDev^2_{\kernIdx}} \right).
@@ -184,9 +186,9 @@
     policy with $K \ll |S|$.
 
     The form used in Eq. \ref{eq:policy_model} is equivalent to the Gibbs policy from \cite{Sugiyama2015StatisticalRL}.
-    It is referred to as a Boltzmann policy in \cite{Hanawal2017LearningPolicies}, and \cite{herman2016inverse},
-    although the authors have described this parameterizion without reference to a temperature parameter, in which case
-    $\kappa=1$.
+    It is referred to as a Boltzmann policy in \cite{Hanawal2017LearningPolicies}, \cite{khamassi2017active}, and
+    \cite{herman2016inverse}, although the authors have described this parameterizion without reference to a temperature
+    parameter, in which case $\kappa=1$.
 
 \section{Policy Inference}\label{sec:policy_obj}
 
@@ -212,7 +214,7 @@
         \cite{tangkaratt2014model} \cite{sehnke2010parameter}. In lieu of state-action sequences, Section
         \ref{sec:gauss_policy} will present an inference procedure that uses observed state-\textnormal{action-outcome}
         sequences. The action-outcome is assigned to be the most probable \textnormal{(maximum a posteriori)} action
-        that can lead from $\textnormal{s}$ to $\textnormal{s'}$ using the known transition function, $T(\cdot)$.
+        that can lead from $\textnormal{s}$ to $\textnormal{s}'$ using the known transition function, $T(\cdot)$.
     \end{remark}
 
     Suppose the policy of agent one, \policy{1} is known. We'll define the probability of a trajectory as the joint
@@ -270,13 +272,13 @@
                     \ln\left(P(\traj_d|\policy{1},\paramVec)\right)\right)\\
                 & = \argmax_{\paramVec}\expectation{P(\traj_d|\calD)} {\ln(P(\traj_d|\policy{1},\paramVec))} \\
                 &\approx \argmax_{\paramVec} \sum_{\traj_d \in D}  \ln(P(\traj_d|\policy{1},\paramVec))\\
-                & =\argmax_{\paramVec} \logLike(D|\policy{1},\paramVec)
+                & =\argmax_{\paramVec} \logLike(D|\policy{1},\paramVec),
             \end{aligned}
         \end{equation}
 
         \noindent
         where we estimate the expectation using the empirical mean. We will write the final line of Eq.
-        \ref{eq:min_kld} as $\logLike(\paramVec; \policy{1})$ for compactness and consistency with Lemma
+        \ref{eq:min_kld} as $\logLike(D|\paramVec)$ for compactness and consistency with Lemma
         \ref{lemma:obj_fun_equiv}.
 
     \end{proof}
@@ -292,12 +294,12 @@
     \end{assumption}
 
     \noindent
-    The infinite $\mathsf{L_{\infty}}$-norm between two policies,
+    The infinite $\mathsf{L_1}$-norm between two policies,
     \[
         \OneNorm{\policy{x}(s),\policy{y}(s)} = \sum_{s \in S}\sum_{a \in A}\policy{x}(a|s)-\policy{y}(a|s),
     \]
     is a measurable distance unlike \ac{KLD}; $\text{KL}(p||q) \neq \text{KL}(q||p)$. For all following experiments,
-    we'll use the $\mathsf{L_{\infty}}$-norm to compare two policies.
+    we'll use the $\mathsf{L_1}$-norm to compare two policies.
 
     We are now ready to discuss the inference procedure used to identify the best estimate of $\policy{2}(s, \paramVec)$
     that maximizes the R.H.S of Lemma \ref{lemma:obj_fun_equiv}.
@@ -354,8 +356,8 @@
     \]
 
     \par
-    The bracketed gradient in the last line of Eq. \ref{eq:gradLogLike} with respect to each element of \vect{\mu} and
-    $\vect{\nu}$ are:
+    The bracketed gradient components in the last line of Eq. \ref{eq:gradLogLike} with respect to each element of
+    \vect{\mu} and $\vect{\nu}$ are:
     \[
     \nabla_{\mu_{\paramIdx}}\log P(\paramElem^{(i)} | \rho_{\paramIdx}) =
         \frac{\paramElem^{(i)} - \mu_{\paramIdx}}{\nu_{\paramIdx}^2},\ \text{and}
@@ -462,9 +464,9 @@
     The motion resulting from an action $a_2$ is stochastic; the intended motion is actually executed with a probability
     of $0.8$, and there is a probability of $0.1$ of sliding in the two perpendicular motion directions. The exception
     is the $Empty$ action which results in a $Stay$ motion with probability $1$. The boarders of the grid-world are
-    considered to be walls. If the resulting motion would cause the agent to leave the grid then $Stay$ is selected,
-    $s'=s$.  Table \ref{table:motion_model} clarifies the motion model for the $East$ action based on the starting cell
-    location.
+    considered to be walls. If the resulting motion would cause the agent to leave the grid then $Stay$ is selected as
+    the outcome, $s'=s$.  Table \ref{table:motion_model} clarifies the motion model for the $East$ action based on the
+    starting cell location.
 
     \begin{table}[h!]
         \centering
@@ -520,9 +522,10 @@
 
     \subsection{Experiment Hyper-parameters}
     To approximate the $Q$-function of \agent{2}, per Section \ref{sec:policy_parameterization}, let's start by placing
-    a kernel centered at every grid cell. This sets $W=|S|\times A$, which is an unrealistic number of parameters but
+    a kernel centered at every grid cell. This sets $W=|S|\times A$, which is an unrealistic number of parameters but,
     it's a good test. See Fig.  \ref{fig:kernel_visualization} for a visualization of how the the kernel function
-    values, $k(s,a_2)$, at each state are mapped to the feature vector-function $\featFunc$. We'll set the following
+    values, $k(s,a_2)$, at each state are mapped to the feature vector-function $\featFunc$. Also, the initial guess of
+    \policy{2} is set to be uniform across the entire action set available to \agent{2}. We'll set the following
     parameters:
 
     \begin{table}[H]
@@ -571,8 +574,8 @@
 
 \subsection{Results}\label{sec:single_agent_25K_results}
     Our Assumption \ref{assump:opt_policy_err} is verified by Figures \ref{fig:single_agent_logLike_25_kernels} and
-    \ref{fig:single_agent_L1Norm_25_kernels}. The recorded $\mathsf{L}_{\infty}$-norm was neither used during gradient
-    ascent, nor as a termination criteria. Note that the final $\mathsf{L}_\infty\text{-norm} \approx 0.7$. This final
+    \ref{fig:single_agent_L1Norm_25_kernels}. The recorded $\mathsf{L}_1$-norm was neither used during gradient
+    ascent, nor as a termination criteria. Note that the final $\mathsf{L}_1\text{-norm} \approx 0.7$. This final
     error has a range of about $[0.01-5]$ with these parameters over different trials.  We can also examine the dynamics
     of the distribution $\rho$ as well, see Figures \ref{fig:smooth_gradient_dynamics_mu} and
     \ref{fig:smooth_gradient_dynamics_nu}.
@@ -640,24 +643,24 @@
     \subsection{Experiment with Fewer Kernels}
 
         Note that if we use $K=7$, and use the parameters in Table \ref{table:single_agent_new_hyper_params}, we can
-        achieve a final $\mathsf{L}_{\infty}\text{-norm} \approx 6.5$. There is some obvious generalization error in the
+        achieve a final $\mathsf{L}_1\text{-norm} \approx 6.5$. There is some obvious generalization error in the
         inferred policy shown in Fig. \ref{fig:single_agent_policy_7_kernels}. Note that the grid-cells with blue
         circles in them note only that a kernel is centered at that location, the circle is not proportional to
-        $\kernStdDev_{\kernIdx}$. Also, the magnitudes of the circles and arrows are proportional to the probability of
+        $\kernStdDev_{\kernIdx}$. However, the magnitudes of the dots and arrows are proportional to the probability of
         selecting that action; the yellow cell is in the most North-East cell.
 
-\todo[inline]{Format this table similar to Table \ref{table:single_agent_hyper_params}.}
+\todo[inline]{Add results from smallest data-set.}
     \begin{table}[H]
         \centering
-        \begin{tabular}{c|c}
-                $\kernStdDev_{\kernIdx}$ & $\mathbf{2.0},\ \forall l$ -- Identical kernel standard-deviations.\\
-                $\kappa$ & $0.1$ -- Temperature of $\estimate{\policy{}}_2$. Eq. (\ref{eq:policy_model}). \\
-                $\lambda$ & $\mathbf{1\mathrm{e}\!-\!6}$ -- Gradient update rate. Eq. (\ref{eq:gradient_update}) \\
-                $\eta$ & $\mathbf{0.2}$ -- Gradient velocity memory.\\
-                $m$ & 5000 -- Per iteration sample size of $\paramVec\sim \rho$.\\
-                $\Lambda$ & $60$ - Moving average buffer length for $\mathsf{HIST}(\logLike)$. \\
-                $\zeta$ & $0.001$ Gradient ascent termination when $\Delta\mathsf{HIST}(\logLike) < \zeta$.\\
-                $\nu_{min}$ & $0.2$ -- Minimum parameter standard-deviation.\\
+        \begin{tabular}{c|l l}
+                $\kernStdDev_{\kernIdx}$ & $\mathbf{2.0},\ \forall l$ & Identical kernel standard-deviations.\\
+                $\kappa$ & $0.1$ & Temperature of $\estimate{\policy{}}_2$. Eq. (\ref{eq:policy_model}). \\
+                $\lambda$ & $\mathbf{1\mathrm{e}\!-\!6}$ & Gradient update rate. Eq. (\ref{eq:gradient_update}) \\
+                $\eta$ & $\mathbf{0.2}$ & Gradient velocity memory.\\
+                $m$ & 5000 & Per iteration sample size of $\paramVec\sim \rho$.\\
+                $\Lambda$ & $60$ & Moving average buffer length for $\mathsf{HIST}(\logLike)$. \\
+                $\zeta$ & $0.001$ & Gradient ascent termination when $\Delta\mathsf{HIST}(\logLike) < \zeta$.\\
+                $\nu_{min}$ & $0.2$ & Minimum parameter standard-deviation.\\
         \end{tabular}
         \caption{Hyper-parameters for inference with $K=7$.}
         \label{table:single_agent_new_hyper_params}
