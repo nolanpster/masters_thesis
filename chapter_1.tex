@@ -27,11 +27,11 @@
 
     A fundamental assumption of this thesis is that when an autonomous agent moves in an environment it is attempting to
     fulfill a specified task. The agent could be an autonomous vehicle or a robotic manipulator and in a realistic
-    environment there will be static obstacles and other autonomous and uncontrollable agents. Tasks for autonomous
+    environment, there will be static obstacles and other autonomous and uncontrollable agents. Tasks for autonomous
     agents are often multifaceted. Two examples are:
     \begin{itemize}
         \item \quotationMarks{Drive from point-A to point-B
-    and do not leave the road or collide with another car or pedestrian.}
+    and neither leave the road nor collide with another car or pedestrian.}
         \item \quotationMarks{Pick up everything on the table and put it in the box that the human is holding.}
    \end{itemize}
 
@@ -69,10 +69,10 @@
     \ref{chapt:proactive_inference} will introduce our algorithm for active policy inference and demonstrate results
     with several simulation experiments.
 
-    Consider the following. Each day, a mobile robot repeatedly traverses a factory floor to deliver a parcel.
+    Consider the following: Each day, a mobile robot repeatedly traverses a factory floor to deliver a parcel.
     Eventually, a second robot also starts working in the area, and the first robot does not know anything about the
     second robot's task. The first robot must not collide with the second robot and, without knowledge of the second
-    robot's intent, it now takes longer to deliver it's parcel each day. After each day, the first robot can use it's
+    robot's intent, it now takes longer to deliver its parcel each day. After each day, the first robot can use it's
     observations of the inter-robot interactions to improve its delivery plan. Is there a better solution than greedily
     updating the plan?  Can the first robot plan to move in such a way that will expose more about the second robot?
 
@@ -117,8 +117,8 @@
     parameter set that scales with the size of the state and action domains.
 
     The \Rmax algorithm from \cite{brafman2002r} is specifically geared to solve a multi-agent \ac{MDP}. \Rmax, however,
-    would require that the controllable agent coerce visits to each \textit{joint}-states\footnotemark enough times to
-    conclude, with a specified confidence, what the policy of the uncontrollable agent is. This essentially models the
+    would require that the controllable agent coerce visits to each \textit{joint}-state\footnotemark enough times to
+    conclude, with a specified confidence, what the probability of future joint states is. This essentially models the
     action distribution of the other agent(s) as part of the underlying transition model.  \footnotetext{A joint-state
     is the combination of the states of individual agents.}
 
@@ -140,10 +140,10 @@
     time a state transition is observed, the authors record it and subject each new transition to a
     \quotationMarks{stochasticity check}, essentially trying to detect a change in the adversarial policy using the
     Chernoff bound. Both \cite{lim2013reinforcement} and \cite{bertuccelli2012robust} have tried to overcome the
-    conservativeness often encountered in \textit{minimax} policies, but environmental agents can agnostic, or even
+    conservativeness often encountered in \textit{minimax} policies, but environmental agents can be agnostic, or even
     complimentary, to the controllable agent's intent.
 
-    In general, model-based solutions allow the agent to leverage it's belief about future states as it plans. This
+    In general, model-based solutions allow the agent to leverage its belief about future states as it plans. This
     belief is reflected in the \textit{value} of each state, but is very sensitive to model errors.
 
     In this work, we assume that the second agent's policy is unknown but can be parameterized. We'll use a \ac{HiPMDP}
@@ -162,8 +162,8 @@
     This work will implement policy-gradient methods to infer a policy from observed state-sequences. Policy-gradients
     \cite{williams1992simple} are traditionally applied in model-\emph{free} \ac{RL} as well as actor-critic \ac{RL}.
     Although this work will use policy-gradients in model-based learning, it is worthwhile to describe how exploration
-    is used by other policy-gradient implementations, and how it produces more informative samples (state-sequences).
-
+    is achieved by other policy-gradient implementations, and how it produces more informative samples
+    (state-sequences).
 
     The PILCO algorithm, from \cite{deisenroth2011pilco}, claims exceptional sample efficiency as it learns a dynamics
     model of a physical cart-pole swing-up. It learns the optimal control inputs to the system via a policy-gradient,
@@ -176,8 +176,7 @@
     mean value determined by learned feature weightings.
 
     If an agent is synthesizing a policy, regularizing a value function with an entropy term puts value on exploration
-    \cite{nachum2017bridging}. Entropy regularization works in-practice, but like applying random-restarts to a
-    Q-learning algorithm \color{blue}(need a citation for this!)\color{black}, these are heuristic approaches that do
+    \cite{nachum2017bridging}. Entropy regularization works in-practice but this is a heuristic that does
     not \textit{guide} exploration in a formulaic approach. This work will infer the policy of an uncontrollable agent
     using a policy-gradient method, and directly use the second moment of the policy parameters to guide exploration.
 
@@ -186,7 +185,7 @@
 
     The stated inference problem is similar to \emph{imitation learning}, also referred to as \textit{learning from
     demonstration}. These algorithms attempt to learn a policy from expert demonstrations, although the
-    \quotationMarks{experts} may be following sub-optimal policies.
+    \quotationMarks{expert} may be following a sub-optimal policy.
 
     Given a set of state-action samples and a set of pre-defined features, \cite{Hanawal2017LearningPolicies} discuss
     the number of samples required to learn an unknown transition model \emph{and} policy from demonstration given a
@@ -199,10 +198,11 @@
     probability of error by minimizing an upper bound to the 0-1 loss of a learned trajectory; the 0-1 loss would count
     the number of times the agent took a different action than the expert, but this is not always observable.
 
-    At any point during a trajectory, the agent has some probability of asking for the expert to correct the trajectory.
-    Early in the learning, the agent is likely to have made several errors, so the expert correction is very
-    informative. The correction will probably start from a state that the expert would not have visited on its own. The
-    chance of querying the expert for advice diminishes as the learning procedure continues.
+    At any point during a trajectory, the agent has some probability of asking for the expert for a correction that will
+    last a few time steps, creating a mixture of expert and agent decisions.  Early in the learning, the agent is likely
+    to have made several errors, so the expert correction is very informative. The correction will probably start from a
+    state that the expert would not have visited on its own, and the chance of querying the expert for advice diminishes
+    as the learning procedure continues.
 
     By aggregating the observed data from previous learning stages, \DAGGER produces a final policy that matches the
     average loss incurred during the training period. Since the first stages had a high proportion of expert
@@ -211,21 +211,87 @@
 
 \subsection{Active Learning}
 
-    \todo[inline]{To Do: provide overview of active learning}
+    When an agent is trying to learn a model, e.g. a transition or value function, collecting data from areas of the
+    largest model error is clearly the best way to improve a model estimate. The true model error is rarely available to
+    an agent, however. As a proxy, agents can minimize an upper bound to that error, or seek data that minimizes the
+    uncertainty in the model itself. An agent that intentially seeks data that will minimize that error or uncertainty
+    is employing an \emph{active} procedure in the \ac{RL} task. In fact, the \DAGGER algorithm \cite{ross2011reduction}
+    previously discussed has been described as \quotationMarks{active leraning from an oracle} by
+    \cite{andersson2017deep}. Several other active learning implementations are discussed here.
 
-    Using a semi-MDP,  \cite{andersen2017active} use a policy that is exploration only but non-Markovian.  By clustering
-    states to symbols, where symbols can be chained together to represent high level task options, the exploration
-    policy chooses actions that maximize the expected information gain.
+    Active learning is used to provide risk-aware trajectory sampling for a quadcopter in \cite{andersson2017deep}. The
+    quadcopter must learn a policy that minimizes a loss function that penalizes collisions with uncontrollable humans
+    and the distance to a target \cite{andersson2017deep}. The authors assert that there is a subset of states where the
+    learned policy must be as close to optimal as possible, while other subsets can accept larger error. The most
+    crucial states are those that have a high risk of catastrophic loss; in \cite{andersson2017deep}'s experiment, these
+    are states where the quadcopter is close to colliding with humans. The quadcopter gathers trajectory samples in the
+    environment and then trains a policy with a deep neural network based on a loss-function. New trajectories are
+    sampled to start in areas of high loss. While this implementation quickly learned how to avoid collisions and reach
+    a target, much of this work unsupported by any rigorous proofs and the degree of active sampling is controlled by
+    the system designer.
 
-    Planning to summarize the following:
-    \begin{itemize}
-        \item \cite{khamassi2017active}
-        \item \cite{andersson2017deep}
-        \item \cite{martinez2007active}
-        \item \cite{akiyama2010efficient}
-        \item re-read \cite{andersen2017active}
-    \end{itemize}
+    In comparison, \cite{khamassi2017active} randomly sample policy parameters from a normal distribution and actively
+    update the distributions movements as a function of the rewards earned by recent trajectory samples from a system. A
+    robot interacts with a human and is rewarded by an \emph{engagement} metric. This implementation actively varies the
+    distribution of policies that generate the trajectories to converge to the most rewarding policy, but the mechanism
+    to control this active update is still heuristically defined.
 
+    A more rigorous application of active learning is applied to a \ac{slam} problem in \cite{martinez2007active}. A
+    robot is tasked to reach a target location and while the loss-function includes is the uncertainty in the robot's
+    final position, it also includes the uncertainty in the locations of several objects in an unknown world. The robot
+    learns policy parameters (waypoints) that lead to a target position and the loss is represented as the trace of the
+    covariance matrix on the robot and object location estimates. Additionally, each object's location can only be
+    sensed (corrupted by noise) from a subset of the robot state space. After reaching each waypoint, the robot actively
+    uses a receding horizon planner to select future waypoints. The policy parameters are modeled by \acf{GP}. The
+    distribution that future waypoints are chosen from is proportional to the infill of the \ac{GP} that defines the
+    remaining policy parameters to be chosen. Infill is represented as the amount of the \ac{GP}'s
+    cumulative-density-function that lies below the minimum loss observed in the current trajectory. Therfore, the next
+    waypoints are chosen proportional to the amount of valuable information that can be gained about object and robot
+    locations.
+
+    Finally, \cite{akiyama2010efficient} apply the \ac{lspi} and active-learning to a robot learning to hit a ball with
+    a bat. The derivation is motivated by sample efficiency, especially for cases when gathering trajectories is cheap,
+    but computing rewards for trajectories is expensive. The authors provide a consistent estimator of reward error, the
+    true-reward less the expected-reward generated by a trajectory. They assume that, given their feature selection,
+    there are optimal parameters that can represent the optimal \emph{Q}-function. First, policies are sampled, and for
+    each policy, a set of trajectories are generated without evaluating a reward. The consistent estimator of reward
+    error is the trace of the empirical (importance weighted) covariance of the expected discounted features over all
+    sampled trajectories, and the policy that minimizes this loss is used to gather rewarded-trajectories; this policy
+    is used to try to hit the ball. This \emph{active} synthesis step is repeated after new (unrewarded) trajectories
+    are gathered, and used as the basis for importance weighting, but it is not used for sampling the trajectories so
+    the collection of trajectories remains statistically independent. So, this implementation actively \emph{weights}
+    sampled trajectories to eventually learn an optimal policy.
+
+    The key tenant of (most) active learning algorithms is determining what is unknown in a model and adjusting the
+    policy such that some measure of the unknown is minimized. This helps active learning algorithms improve sample
+    efficiency in \ac{RL}.
+
+    \begin{remark}
+        It should be noted that \cite{friston2012active} uses the term ``active inference'' to describe a policy
+        synthesis algorithm for computing an optimal policy in a belief-\ac{MDP}. This synthesis algorithm shows that
+        minimizing \textnormal{surprise}, the negated log-likelihood of an observed state transition, yields the same
+        policy as maximizing the expected reward. This should not be confused with the implementation in this work.
+%    \begin{itemize}
+%        \item claim \emph{active inference} a policy should minimize the variational free energy on the marginal
+%            likelihood of observed states
+%        \item first, they show that an optimal control problem can be formulated as a Bayesian inference problem
+%        \item ``action does not minimize a cost, but rather maximizes the marginal likelihood of observations under a
+%            generative model that entails a policy''
+%        \item ``active inference elicits observations that are most plausible under beliefs about future states'', this
+%        essentially minimizes surprise (compared to eliciting future states based on value) \item formulated as a POMDP
+%            where all states are hidden and the agent makes stochastic observations of the current state
+%        \item to minimize ``surprise'' this method minimizes the expected negated log-likelihood of an observation,
+%            marginalized over hidden states in a model.
+%        \item cost functions are replaced by priors over hidden states and transitions such that they are very
+%            surprising, such that this formulation will avoid taking actions that lead to a belief that the system is in
+%            this surprising state
+%        \item the term ``active infernce'' in this work and others by Friston et. al, is used to note that an optimal
+%            policy can be synthesized in a partially observable environment by minimizing the surprise of state
+%            transitions. However, the note that this relies on the agent being provided with a probabilistic model of
+%            the environment. In this thesis we will provide a framework for actively inferring the \emph{probabalistic
+%            transition model}.
+%    \end{itemize}
+    \end{remark}
 
 \section{Contributions of this work}\label{sec:contributions}
 
