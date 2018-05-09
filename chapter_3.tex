@@ -19,11 +19,11 @@ position of \agent{1}.
         \optimal{\policy{i}} \leftarrow \arg\max_{\policy{i}}\sum_{s\in S} V_{\policy{i}}(s)I_0(s) .
     \end{equation}
 
-    In an \ac{MDP} with stochastic transitions, a common way to solve for a policy by iteratively updating the value
+    In an \ac{MDP} with stochastic transitions, a common way to solve for a policy is by iteratively updating the value
     function presented in Section \ref{sec:policy_iteration_preliminaries}. If the policy of \agent{2} was known, then
-    iteratively solving the Bellman equation \cite{hernandez2012adaptive} will converge to a policy that takes an
-    optimal action at each state. This is known as \acf{VI}. Note that if we use the true policy of \agent{2}, an
-    optimal policy, within a prescribed tolerance, will eventually be found via:
+    iteratively solving the Bellman equation \cite{hernandez2012adaptive} will converge to a policy that takes a
+    discount optimal action at each state. This is known as \acf{VI}. Note that if we use the true policy of \agent{2},
+    an optimal policy, within a prescribed tolerance, will eventually be found via:
     \begin{equation}\label{eq:bellman_true}
         \begin{aligned}
                 \optimal{V}(s) &= \max_{a_1}\left[R(s,a_1) +
@@ -55,7 +55,7 @@ grows. To approximately solve for \agent{1}'s policy, we'll use the \ac{EM} solu
 \cite{toussaint2010expectation}. The computational requirements to solve for a sub-optimal policy for \agent{1} are much
 less than traditional value iteration; see Figure 1.4 in \cite{toussaint2010expectation}. Although the solution is
 sub-optimal, the solution is complete for the entire state-action-space. Since \ac{EM} is traditionally used as a
-clustering algorithm \cite{something}, the resulting policy is not a hardmax (deteriministic) like Eq.
+clustering algorithm \cite{dempster1977maximum}, the resulting policy is not a hardmax (deteriministic) like Eq.
 \ref{eq:policy_hard_max} but rather a softmax (stochastic).
 
 \subsubsection{Policies from Expectation Maximization}\label{sec:EM}
@@ -74,7 +74,7 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
 
     Their derivation starts with the joint distribution of the probability of a reward $\mathcal{R}$, a sequence of
     states $\traj$, and the probability of the sequence ending at time \Tau, subject to a policy $\policy{1}$. Note that
-    $s^{(\Tau)}$ is the state at time \Tau in the joint distribution,
+    $s^{(\Tau)}$ is the state at time $\Tau$ in the joint distribution,
     \begin{equation} \label{eq:em_joint_dist}
         \begin{split}
             P(R,\traj,\Tau;\policy{1})
@@ -83,7 +83,7 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
                         P(s^{(0)};\policy{1})\delta_{|\tau|\Tau}P(\Tau),
         \end{split}
     \end{equation}
-    where $\delta_{|\tau|\Tau}=1$ when the trajectory ends at step \Tau and is zero otherwise. The algorithm requires
+    where $\delta_{|\tau|\Tau}=1$ when the trajectory ends at step $\Tau$ and is zero otherwise. The algorithm requires
     that each MDP in the mixture only emits a reward at a single final time step; the final states, $r$, in Fig.
     \ref{fig:mixMDP} emit rewards from the distribution $\mathcal{R}(s^{(\Tau)},a_1^{(\Tau)})$ which is defined:
     \[
@@ -99,10 +99,10 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
     and the \ac{KLD} of the latent variable distribution $\omega$ from the latent variables given a reward and subject
     to $\policy{1}$. The latent, unknown, variables of the \ac{MDP} are the state-action sequence that brings the system
     to a final state, $s^{(\Tau)}$, at time $\Tau$. Note that only sequences where $|\traj|= \Tau$ provide a non-zero
-    probability of reward.
+    probability of reward in the mixture of finite-time \acp{MDP}.
 
     \par
-    The M-step returns the energy function maximized over the latent variables using the previous, texit{old},
+    The M-step returns the energy function maximized over the latent variables using the previous, \textit{old},
     iteration's policy:
     \begin{equation} \label{eq:M_step}
         \begin{split}
@@ -127,6 +127,13 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
     the M-step to provide the policy for future iterations, up to $Z$ iterations. The terms $\alpha$ and $\beta$ are
     updated on a state-action horizon time-limit of $H$.  Toussaint et al. in \cite{toussaint2010expectation} show that
     as $Z\rightarrow{}\infty$, and $H\rightarrow{}\infty$, the EM algorithm returns a policy equivalent to that from VI.
+    The parameters $Z$ and $H$ are now added to the set of hyper-parameters for a multi-agent simulation
+
+\begin{remark}
+    In the experiment implementation in the following sections and chapters, note that if the horizon parameter $H$ is
+    too short and the reward space is sparse, states that are too far from receiving a reward will select the
+    \emph{Empty} action.
+\end{remark}
 
     Section \ref{sec:em_vi_comparison} will compare the policy synthesis ov \ac{EM} and VI, but we first must define the
     true policy of \agent{2} in a multi-agent environment.
@@ -141,14 +148,14 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
     cardinality of $S$, $|S|$, has exploded to $25^2$. Given the number of actions available at each state, $5$, an
     approximation of $\policy{2}$ must represent the probability of selecting each action at each state; the cardinality
     of the policy estimate, $|\estimate{\policy{}}_2|$, has increased from $125$ to $3125$. How can we design a set of
-    kernels, so that $W \ll |S|$ and minimize $\OneNorm{\policy{2}(s), \estimate{\policy{}}_2(s;\estimate{\paramVec})}$?
+    kernels, so that $K \ll |S|$ and minimize $\OneNorm{\policy{2}(s), \estimate{\policy{}}_2(s;\estimate{\paramVec})}$?
 
 
     For the example tasks described in Chapter \ref{chapt:motivation}, a human would infer that the uncontrollable
     agents would only change their actions if the controllable agent is within a relative distance. Other cars might
     only swerve away from a driver if two cars become dangerously close. Alternatively, a human holding a basket might
     only extend their arms to accept a load of items when the manipulator is sufficiently close to them. With this
-    assumption, we'll make the inference task manageable.
+    assumption, we'll make the inference task computationally manageable.
 
     For simplicity, we've adjusted the grid-world example from that used in Section \ref{sec:single_agent_experiment}
     one with no obstacles and deterministic transitions. The motivation for this will be discussed in Chapter
@@ -170,8 +177,8 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
 
     Using Assumption \ref{assump:multi_agent_interraction}, then we can segment our parameter and feature vectors into
     fixed and mobile elements. The fixed kernels are still scattered at locations $c_l \subset S_2,\ l=0,\ldots,K-1$.
-    Now, consider that the $K^{\text{th}}$ kernel is mobile; it is attached to the \agent{1}\!'s location. When this
-    kernel is far from the current state of \agent{2} its anticipated influence is very small due to Eq.
+    Now, consider that the next, $K^{\text{th}}$, kernel is mobile; it is attached to the \agent{1}\!'s location. When
+    this kernel is far from the current state of \agent{2} its anticipated influence is very small due to Eq.
     \ref{eq:kernel_func}. This simply requires that another $|A|$ parameters elements are included in the \paramVec\
     from the experiments in Section \ref{sec:single_agent_experiment}.
 
@@ -188,7 +195,7 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
                         \end{minipage}
                 }
         \end{center}
-\end{figure}
+    \end{figure}
 
     To perform multi-agent experiments, let's now synthesize a true policy for \agent{2} that is a combination of the
     policy shown in Fig. \ref{fig:single_agent_empty_policy} and a repulsive effect from the proximity to \agent{1}. To
@@ -227,11 +234,12 @@ clustering algorithm \cite{something}, the resulting policy is not a hardmax (de
     \label{table:true_multi_agent_2_policy}
 \end{table}
 
-    The resulting policy is harder to visualize. In the case where $s_1=11$, marked in blue in Figure
-    \ref{fig:agent_2_multi_agent_policy}, the black arrows represent the probability of taking each action given that
-    \agent{1} is located in the blue cell. The effect of the mobile kernel is obvious in comparison to Figure.
-    \ref{fig:single_agent_empty_policy}. This realization of $\policy{2}((s_1,s_2);\optimal{\paramVec})$ will be used as the
-    benchmark for multi-agent inference experiments in both Section \ref{sec:multi_agent_inference_experiment} and Chapter
+    The resulting policy is harder to visualize. In Figure \ref{fig:agent_2_multi_agent_policy}, the black arrow
+    magnitudes represent the probability of \agent{2} taking each action \textbf{given that \agent{1} is located in the
+    blue cell}. Grey dots become larger and blacker as the probability of \agent{2} selecting the \emph{Empty} action
+    increases. The effect of the mobile kernel is obvious in comparison to Figure.  \ref{fig:single_agent_empty_policy}.
+    This realization of $\policy{2}((s_1,s_2);\optimal{\paramVec})$ will be used as the benchmark for multi-agent
+    inference experiments in both Section \ref{sec:multi_agent_inference_experiment} and Chapter
     \ref{chapt:proactive_inference}.
 
     \begin{figure}[htb]
@@ -274,8 +282,13 @@ The parameters necessary for EM and VI are listed in Table \ref{table:optimal_ag
 \end{table}
 As a comparison, when \emph{agent two} is in the middle cell, marked in blue, the optimal policy of \agent{1} to reach
 the green cell is shown in Figure \ref{fig:optimal_agent_1_VI_policy}. The agent is clearly exploiting its knowledge of
-the true $\policy{2}(s;\optimal{\paramVec})$ when $(s) = (13,12)$ as that is normally a very dangerous action. Figure
-\ref{fig:optimal_agent_1_EM_policy} shows the approximately optimal $\policy{2}(s;\optimal{\paramVec})$ from EM.
+the true $\policy{2}(s;\optimal{\paramVec})$ when $(s) = (13,12)$ as that is normally a very dangerous
+action\footnote{Actually, a bug was recently discovered in the simulation engine written by your's truly. Without a
+memory variable in the MDP, the agent's are currently allowed to \emph{swap} places without triggering a collision. The
+root of the problem is the definition of the transition probability matrix format and is not an easy fix. However, the
+policy of \agent{1} cleraly exploits this when $(s) = (13,12)$ (the blue cell is 12, the one to the right of it is cell
+13).}. Figure \ref{fig:optimal_agent_1_EM_policy} shows the approximately optimal $\policy{2}(s;\optimal{\paramVec})$
+from EM.
 
     \begin{figure}[H]
         \begin{center}
@@ -308,17 +321,18 @@ those in Section \ref{sec:single_agent_experiment}. We'll also use the inference
 locations and a mobile kernel.
 
 The error metric plotted in Fig. \ref{fig:multi_agent_error_25_kernels} is now the fraction of the maximum possible
-$\text{L}_{\infty}$-norm. That is, for each iteration $n$,
-\[
+$\text{L}_1$-norm. That is, for each iteration $n$,
+\begin{equation}\label{eq:error_percent}
         Error(n) = \frac{\OneNorm{\policy{2},\estimate{\policy{}}_2}}{2|S|}.
-\]
+\end{equation}
 With this, we can represent the likelihood of $\estimate{\policy{}}_2$ selecting different actions at each joint state
-$s$ from the true \policy{2}. For instance, if $Error(n)==1$, the $\estimate{\policy{2}}$ will select a different action
-every time. Recognize that there are infinitely many softmax policies that have $Error(n)==1$, and a finite number of
-hardmax policies with this upper error value.
+$s$ from the true \policy{2}. For instance, if $Error(n)==1$, then all actions sampled from $\estimate{\policy{}}_2$
+will be different from the true \policy{2} at every state. Recognize that there are infinitely many softmax policies
+that have $Error(n)==1$, and a finite number of hardmax policies with this upper error value.
 
-Given that $W \ll |S|\times |A|$, the inference result in Fig. \ref{fig:multi_agent_error_25_kernels} produced a
-reasonable policy estimate, $\estimate{\policy{}}_2$.
+Given that the feature-space is much smaller than the joint state-action-space, $W = 26 \times 5 = K \times |A| \ll
+|S|\times |A| = 625 \times 5$, the inference result in Fig. \ref{fig:multi_agent_error_25_kernels} produced a reasonable
+policy estimate, $\estimate{\policy{}}_2$.
 
 
 \begin{table}[H]
@@ -374,7 +388,7 @@ reasonable policy estimate, $\estimate{\policy{}}_2$.
                                 \ref{table:multi_agent_hyper_params}.}
                         \label{fig:multi_agent_error_25_kernels}
                     \end{minipage}
-                }
+	                }
         \end{center}
 \end{figure}
 
