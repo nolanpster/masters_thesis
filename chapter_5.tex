@@ -2,27 +2,29 @@
 
 This thesis has successfully designed a new parameter-based policy inference algorithm that can be used in model-based
 \ac{RL}. We applied policy-gradient techniques to maximize the likelihood of observed state-sequences from an
-uncontrollable agent with an unknown policy, given a parametric estimate of that policy.
-
-By assuming that the parameter vector is distributed as a multi-variate normal distribution, the policy inference
-algorithm captures the parameter variance, which we show can quantify the uncertainty in the estimated \emph{Q}-function
-of the uncontrollable agent. This report approximated the \emph{Q}-function as a linear combination of parameters and
-features and we successfully demonstrated that we can infer an agent's policy using a feature space that is much smaller
-in cardinality than the state-action space.
+uncontrollable agent with an unknown policy, given a parametric estimate of that policy. By assuming that the parameter
+vector is distributed as a multi-variate normal distribution, the policy inference algorithm captures the parameter
+variance, which we show can quantify the uncertainty in the estimated \emph{Q}-function of the uncontrollable agent.
+This report approximated the \emph{Q}-function as a linear combination of parameters.
 
 
 Using the parametric uncertainty, we also provided two platforms for interacting with an uncontrollable agent. First, if
 we're allowed to ask for policy demonstrations, trajectories, from the uncontrollable agent and select the initial state
 of the trajectory, we can actively seek to aggregate more informative data and improve the sample efficiency of the
-inference. We  can the initial state of a new trajectory based on the estimated variance of the \emph{Q}-function. This
-was applied to a single-agent scenario where we learned the agent's policy from demonstration. We discussed that this
-active-re-sampling can be used to provide more insight into features that have a high parameter uncertainty. The
-single-agent active inference algorithm can accelerate the policy inference, but is highly dependent on the feature
-selection.
+inference. We select the the initial state of a new trajectory from a with probability proportional to the total
+estimated variance of the \emph{Q}-function at a state. This was applied to a single-agent scenario where we learned the
+agent's policy from demonstrations. We discussed that this active-re-sampling can be used to provide more insight into
+features that have a high parameter uncertainty.
+
+The single-agent active inference algorithm can accelerate the policy inference, but is highly dependent on the feature
+selection. To automatically determine pertinent features, future work could initialize the algorithm with many redundant
+features, and then remove the features that the inference algorithm determines to have a parameter mean of zero with
+high confidence. Alternatively, on-line hyper-parameter optimization could help adjust feature locations and size to
+better estimate the demonstrated policy
 
 Second, in a multi-agent experiment, we defined a new bonus-reward that is a function of the estimated variance of the
 uncontrollable agent's \emph{Q}-function. This bonus reward convinced a controllable agent to choose actions that led to
-informative interactions and accelerated the policy inference of the uncontrollable agent. We discussed future work that
-will lead to the controllable agent eventually exploiting the improved information so that it can plan an optimal policy
-as soon as possible.
+informative interactions and accelerated the policy inference of the uncontrollable agent. Future extensions of this
+work also include a joint planning and active learning algorithm. That algorithm would lead to the controllable agent
+eventually exploiting the actively-learned information so that it can plan an optimal policy as soon as possible.
 
