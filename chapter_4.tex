@@ -1,24 +1,26 @@
 \chapter{Proactive Policy Inference}\label{chapt:proactive_inference}
 
-In the experiments in previous sections, an autonomous agent eventually infers a reasonable estimate of an
+In the previous sections, an autonomous agent eventually infers a reasonable estimate of an
 uncontrollable agent's policy. By approximating the uncontrollable agent's $Q$-function as a linear combination of fixed
 and mobile features, the autonomous agent can eventually learn the hidden parameters in the transition model of a
 \ac{HiPMDP}, where the hidden parameter is the policy of the uncontrollable agent.
 
 The successes in previous chapters have ignored a realistic constraint. Often, sampling a system is expensive, costing
-both time and wear-and-tear on mechatronic systems. This chapter will cover how an autonomous agnet can adjust its
-policy to improve sample efficiency.
+both time and wear-and-tear on mechatronic systems. This chapter will introduce active learning to enable an autonomous
+agent can adjust its policy to improve sample efficiency.
 
 \section{Proactive Inference}
 
-Assuming that \agent{1} has received some initial data $D^{(1)}$, the estimated policy of the uncontrollable agent
-can be improved from some initial guess $\estimate{\policy{}}_2^{(0)}$ to form $\estimate{\policy{}}_2^{(1)}$. Let's
-assume that $D^{(1)}$ was incomplete, it did not contain enough data for the following algorithm to meet the
-tolerance required by Assumption \ref{assump:opt_policy_err}. Therefore, \agent{1} will need to gather more data, sets
-of trajectories, $D^{(b)},\ b=1,\ldots,B$. Like the \DAGGER algorithm \cite{ross2011reduction}, whenever a new dataset
-$D^{(b)}$ is received, the data used for inference is updated as $D\leftarrow D\cup D^{(b)}$. Ideally, $D^{(b)}$ will
-contain data that were lacking in all previous batches, because, when there are not enough data, some estimated
-parameter elements, $\estimate{\theta}_\paramIdx$, will be incorrect.
+Assuming that \agent{1} has received some initial data $D^{(1)}$, the estimated policy of the uncontrollable agent can
+be improved from some initial guess $\estimate{\policy{}}_2^{(0)}$ to form $\estimate{\policy{}}_2^{(1)}$. Let's assume
+that $D^{(1)}$ was incomplete, i.e., it did not contain enough data for the following algorithm to meet the tolerance
+required by Assumption \ref{assump:opt_policy_err}. Therefore, \agent{1} will need to gather more data, sets of
+trajectories, $D^{(b)},\ b=1,\ldots,B$, to improve its hypothesis of the other agent's policy. Like the \DAGGER
+algorithm \cite{ross2011reduction}, whenever a new dataset $D^{(b)}$ is received, the data used for inference is updated
+as $D\leftarrow D\cup D^{(b)}$. While \DAGGER imitates the expert policy, and can request corrective actions from the
+expert during a rollout, this implementation can only request another demonstration from \agent{2}.  Ideally, the
+requested $D^{(b)}$ will contain data that were lacking in all previous batches, because, when there are not enough
+data, some estimated parameter elements, $\estimate{\theta}_\paramIdx$, will be incorrect.
 
 How can \agent{1} glean more informative data? To achieve proactive policy inference, \agent{1} needs to recognize what
 parts of $\estimate{\policy{}}_2$ it thinks are known and unknown. Explicitly, after observing $D^{(b)}$, \agent{1}
@@ -27,8 +29,8 @@ will discuss how to distinguish known and unknown policy parameters, and how \ag
 future data, $D^{(b+1)}$.
 
 \begin{remark}
-    The parameter vector inferred from any batch will be written $\estimate{\paramVec}^{(b)}$, which is not to be
-    confused with the sampled $\paramVec^{(i)}$ in Eq. \ref{eq:gradLogLike}.
+    From this point on, the mean parameter vector inferred from any batch, $\vect{\mu}^{(b)}$ , will be used to
+    parameterize the agents policy, e.g., $\policy{2}(s;\vect{\mu}^{(b)})$.
 \end{remark}
 
 
@@ -70,7 +72,7 @@ variable, the $\estimate{Q}$-function is distributed as a multi-variate normal:
 The features, $\featElem(s,a_2),\ w=1,\ldots, W$ can be viewed as the mixing parameters.
 
 A state $s$ is known if and only if for any $a_2 \in A$, $Q(s,a_2)$ is known. Since the $Q$-value is a mixture of
-Gaussians, we'll use the mean and variance of $Q(s,a;\estimate{\paramVec}^{(b)})$ returned from Eq.
+Gaussians, we'll use the mean and variance of $Q(s,a;\vect{\mu}^{(b)})$ returned from Eq.
 \ref{eq:gradient_update} to determine the distribution of a random variable -- the estimate of $\policy{2}(a|s)$.
 
 If we were trying to solve a Probably-Approximatly-Correct- (PAC)-MDP \cite{Fu-RSS-14}, we would require an accuracy in
@@ -82,23 +84,23 @@ Based on the needed accuracy and the relation between $T$ and $\policy{2}$,
 \[
 P(s'|s,a_1) = T(s'|s,(a_1,a_2))\pi_2(a_2|s),
 \]
-we can show:
+we can show for any batch $b$:
 \begin{align*}
 \bar P(s'|s,a_1)  -P(s'|s,a_1)
-& = T(s'|s,(a_1,a_2))\left( \pi_2(a_2|s) - \bar \pi_2(a_2|s;\paramVec^{(b)})
+& = T(s'|s,(a_1,a_2))\left( \pi_2(a_2|s) - \bar \pi_2(a_2|s;\vect{\mu})
 \right)\\
 & \approx T(s'|s,(a_1,a_2)) \\
 & \quad \cdot \Big(\exp(Q(s,a_2)-V(s)/\kappa) \\
-& \qquad\ - \exp(Q(s,a_2;\paramVec^{(b)})-V(s;\paramVec^{(b)})/\kappa) \Big)
+& \qquad\ - \exp(Q(s,a_2;\vect{\mu})-V(s;\vect{\mu})/\kappa) \Big)
 \end{align*}
 
-Since $Q(s,a_2;\paramVec)$ is a Gaussian, $\exp Q(s,a_2;\paramVec)$ is log-normal. Remember that to the first two
+Since $Q(s,a_2;\vect{\mu})$ is a Gaussian, $\exp Q(s,a_2;\vect{\mu})$ is log-normal. Remember that to the first two
 moments, the sum of lognormal random variables can be approximated by a lognormal random variable \cite{fenton1960sum}.
 The approximated value function is the log-summation of log-normal random variables: ${V =\kappa \log \sum \exp
-Q(s,a;\paramVec)/\kappa}$. This can be approximated as a Gaussian. Therefore, we can quantify the bounded error between
-the estimated transition and true transition model, $\pi_2(a_2|s) - \bar \pi_2(a_2|s;\paramVec^{(b)})$,  by directly
+Q(s,a;\vect{\mu})/\kappa}$. This can be approximated as a Gaussian. Therefore, we can quantify the bounded error between
+the estimated transition and true transition model, $\pi_2(a_2|s) - \bar \pi_2(a_2|s;\vect{\mu}^{(b)})$,  by directly
 analyzing the distribution of the log-normal random variable\\
-{\(\exp(Q(s,a_2;\paramVec^{(b)})-V(s;\paramVec^{(b)}))\)}.
+{\(\exp(Q(s,a_2;\vect{\mu})-V(s;\vect{\mu}))\)}.
 
 We will use the linear combination of parameter-variances to quantify the variance of the Q-function,
 \begin{equation}\label{eq:state_action_uncertainty}
@@ -166,7 +168,7 @@ the policy uncertainty in Eq. \ref{eq:active_initial_set}. Otherwise, $s_2^{(b)}
 
 Another note is that the gradient step size, $\lambda$, must now adapt as the data set size, $|D|$, grows; see Remark
 \ref{rem:graidient_variability}. Setting it to be inversely proportional to the nominal log-probability of the observed
-dataset, the constant term in Eq. \ref{eq:log_prob_demo} is often a good choice. If that constant term is zero, i.e.
+dataset, the constant term in Eq. \ref{eq:log_prob_demo} is often a good choice. If that constant term is zero, i.e.,
 transitions are deterministic, the cardinality of the data-set can be used:
 \begin{equation}\label{eq:adaptive_step_size}
     \begin{aligned}
@@ -279,15 +281,16 @@ inference error. The solid lines represent the average $\OneNorm{\policy{2},\est
 
 
 \begin{figure}[!htb]
-        \begin{center}
-                \fbox{
-                        \begin{minipage}{0.75\textwidth}
-                                \includegraphics[width=\textwidth]{single_agent_active_inf_norm}
-                                \caption{50 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with parameters in Table}
-                                \label{fig:single_agent_active_error}
-                        \end{minipage}
-                }
-        \end{center}
+    \begin{center}
+        \fbox{
+            \begin{minipage}{0.75\textwidth}
+                \includegraphics[width=\textwidth]{single_agent_active_inf_norm}
+                \caption{50 trial average: Fraction of maximum possible $\OneNorm{\policy{2},\estimate{\policy{}}_2}$
+                         with parameters in Table}
+                \label{fig:single_agent_active_error}
+            \end{minipage}
+        }
+    \end{center}
 \end{figure}
 
 \subsubsection{Ergodicity concerns}
@@ -332,8 +335,8 @@ as stated in Table \ref{table:single_agent_active_alg_params_long}.
         \fbox{
             \begin{minipage}{0.75\textwidth}
                 \includegraphics[width=\textwidth]{single_agent_passive_inf_norm}
-                \caption{50 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm
-                         parameters in Table \ref{table:single_agent_active_alg_params_long}.}
+                \caption{50 trial average: Fraction of maximum possible $\OneNorm{\policy{2},\estimate{\policy{}}_2}$
+                         with Algorithm parameters in Table \ref{table:single_agent_active_alg_params_long}.}
                 \label{fig:single_agent_passive_error}
             \end{minipage}
         }
@@ -406,8 +409,8 @@ in an 8-by-8 grid world, see Figure \ref{fig:8-by-8_grid_world}, and used the pa
         \fbox{
             \begin{minipage}{0.75\textwidth}
                 \includegraphics[width=\textwidth]{single_stage_active_resample}
-                \caption{100 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm
-                         parameters in Table \ref{table:single_agent_active_alg_two_stage}.}
+                \caption{100 trial average: Fraction of maximum possible $\OneNorm{\policy{2},\estimate{\policy{}}_2}$
+                         with Algorithm parameters in Table \ref{table:single_agent_active_alg_two_stage}.}
                 \label{fig:single_agent_single_update}
             \end{minipage}
         }
@@ -416,7 +419,12 @@ in an 8-by-8 grid world, see Figure \ref{fig:8-by-8_grid_world}, and used the pa
 
 \subsubsection{Large world example}
 
-All previous examples have used a relatively uniform distribution of kernels in the state space, all having equal size, for inference. Given some initial idea about the hidden policy of \agent{2}, a user could intentionally design a set of kernels that might be effective at inferring $\estimate{\policy{}}_2$. Consider the large grid world, visitation count, and kernels described by figures \ref{fig:large_grid_true_policy} and \ref{fig:large_grid_visit_count} in Appendix \ref{sec:32by32grid}. The referenced figures in this section are included in the appendix due to the size required for adequate visualization.
+All previous examples have used a relatively uniform distribution of kernels in the state space, all having equal size,
+for inference. Given some initial idea about the hidden policy of \agent{2}, a user could intentionally design a set of
+kernels that might be effective at inferring $\estimate{\policy{}}_2$. Consider the large grid world, visitation count,
+and kernels described by figures \ref{fig:large_grid_true_policy} and \ref{fig:large_grid_visit_count} in Appendix
+\ref{sec:32by32grid}. The referenced figures in this section are included in the appendix due to the size required for
+adequate visualization.
 
 Specifically, note the relative sizes of the kernels used and the approximate number of state-visits that fall within
 each kernels standard deviation, the blue circles. The inference results for a single stage are presented in Figure
@@ -600,8 +608,8 @@ approach; see Figure \ref{fig:multi_agent_active_error}
         \fbox{
             \begin{minipage}{0.75\textwidth}
                 \includegraphics[width=\textwidth]{multi_agent_active_inf_norm}
-                \caption{50 trial average: Fraction of max $\OneNorm{\policy{2},\estimate{\policy{}}_2}$ with Algorithm
-                         parameters in Table \ref{table:multi_agent_active_alg_params}.}
+                \caption{50 trial average: Fraction of maximum possible $\OneNorm{\policy{2},\estimate{\policy{}}_2}$
+                         with Algorithm parameters in Table \ref{table:multi_agent_active_alg_params}.}
                 \label{fig:multi_agent_active_error}
             \end{minipage}
         }
