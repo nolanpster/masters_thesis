@@ -188,7 +188,7 @@ clustering algorithm \cite{dempster1977maximum}, the resulting policy is not a h
     \begin{figure}[htb]
         \begin{center}
                 \fbox{
-                        \begin{minipage}{0.75\textwidth}
+                        \begin{minipage}{0.65\textwidth}
                             \includegraphics[width=\textwidth]{single_agent_empty_learned}
                             \caption{Hidden Policy of \agent{2} in an empty, deterministic, world.}
                             \label{fig:single_agent_empty_policy}
@@ -245,7 +245,7 @@ clustering algorithm \cite{dempster1977maximum}, the resulting policy is not a h
     \begin{figure}[htb]
         \begin{center}
                 \fbox{
-                        \begin{minipage}{0.75\textwidth}
+                        \begin{minipage}{0.65\textwidth}
                                 \includegraphics[width=\textwidth]{agent_2_multi_agent_policy}
                                 \caption{Hidden Policy of \agent{2} in an empty, deterministic, world with $s_1=11$.}
                                 \label{fig:agent_2_multi_agent_policy}
@@ -256,7 +256,7 @@ clustering algorithm \cite{dempster1977maximum}, the resulting policy is not a h
 
 
 \section{Policy Synthesis Comparison} \label{sec:em_vi_comparison}
-In future experiments, \agent{1} will be tasked to reach the upper left ($North-West$) grid cell, $s_1=0$,
+In future experiments, \agent{1} will be tasked to reach the upper left (\emph{North-West} grid cell, $s_1=0$,
 \emph{without} landing in the same cell as \agent{2}. The reward function for \agent{1} is
 \begin{align*}
         R(s,a_1) & = \begin{cases}
@@ -270,7 +270,7 @@ To create a bencmark optimal policy for \agent{1}, $\policy{1}(s;\optimal{\param
 \ref{eq:bellman_true} with \ac{VI} and maximize Eq. \ref{eq:M_step} using $\policy{2}((s_1,s_2);\optimal{\paramVec})$.
 The parameters necessary for EM and VI are listed in Table \ref{table:optimal_agent_1_EM_policy_params}.
 
-\begin{table}[H]
+\begin{table}[htb]
         \centering
         \begin{tabular}{l|l l}
                 $\gamma$ & $0.9$ & Discount rate in $\mathcal{M}$ \\
@@ -290,10 +290,10 @@ policy of \agent{1} cleraly exploits this when $(s) = (13,12)$ (the blue cell is
 13).}. Figure \ref{fig:optimal_agent_1_EM_policy} shows the approximately optimal $\policy{2}(s;\optimal{\paramVec})$
 from EM.
 
-    \begin{figure}[H]
+    \begin{figure}[htb]
         \begin{center}
                 \fbox{
-                        \begin{minipage}{0.75\textwidth}
+                        \begin{minipage}{0.65\textwidth}
                                 \includegraphics[width=\textwidth]{optimal_robot_VI_policy}
                                 \caption{Optimal policy of \agent{1} from VI with $s_2=12$.}
                                 \label{fig:optimal_agent_1_VI_policy}
@@ -302,10 +302,10 @@ from EM.
         \end{center}
 \end{figure}
 
-    \begin{figure}[H]
+    \begin{figure}[htb]
         \begin{center}
                 \fbox{
-                        \begin{minipage}{0.75\textwidth}
+                        \begin{minipage}{0.65\textwidth}
                                 \includegraphics[width=\textwidth]{optimal_robot_EM_policy}
                                 \caption{Approximately optimal policy of \agent{1} from EM with $s_2=12$.}
                                 \label{fig:optimal_agent_1_EM_policy}
