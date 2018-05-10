@@ -211,56 +211,55 @@
 
 \subsection{Active Learning}
 
-    When an agent is trying to learn a model, e.g. a transition or value function, collecting data from areas of the
+    When an agent is trying to learn a model, e.g., a transition or value function, collecting data from areas of the
     largest model error is clearly the best way to improve a model estimate. The true model error is rarely available to
     an agent, however. As a proxy, agents can minimize an upper bound to that error, or seek data that minimizes the
     uncertainty in the model itself. An agent that intentially seeks data that will minimize that error or uncertainty
-    is employing an \emph{active} procedure in the \ac{RL} task. In fact, the \DAGGER algorithm \cite{ross2011reduction}
-    previously discussed has been described as \quotationMarks{active leraning from an oracle} by
-    \cite{andersson2017deep}. Several other active learning implementations are discussed here.
+    is employing \emph{active} learning in the \ac{RL} task. In fact, \DAGGER  \cite{ross2011reduction} has been
+    described as \quotationMarks{active learning from an oracle} by \cite{andersson2017deep}. Several other active
+    learning implementations are discussed here.
 
     Active learning is used to provide risk-aware trajectory sampling for a quadcopter in \cite{andersson2017deep}. The
     quadcopter must learn a policy that minimizes a loss function that penalizes collisions with uncontrollable humans
-    and the distance to a target \cite{andersson2017deep}. The authors assert that there is a subset of states where the
-    learned policy must be as close to optimal as possible, while other subsets can accept larger error. The most
-    crucial states are those that have a high risk of catastrophic loss; in \cite{andersson2017deep}'s experiment, these
-    are states where the quadcopter is close to colliding with humans. The quadcopter gathers trajectory samples in the
-    environment and then trains a policy with a deep neural network based on a loss-function. New trajectories are
-    sampled to start in areas of high loss. While this implementation quickly learned how to avoid collisions and reach
-    a target, much of this work unsupported by any rigorous proofs and the degree of active sampling is controlled by
-    the system designer.
+    and the distance to a target. The authors assert that there is a subset of states where the learned policy must be
+    as close to optimal as possible, while other subsets can accept larger error. The most crucial states are those that
+    have a high risk of catastrophic loss; in this experiment, these are states where the quadcopter is close to
+    colliding with humans. The quadcopter gathers trajectory samples in the environment and then trains a policy with a
+    deep neural network. New trajectories are more likely to be sampled from areas of high loss. While this
+    implementation quickly learned how to avoid collisions and reach a target, much of this work unsupported by any
+    rigorous proofs and the degree of ``active'' sampling is controlled by the system designer.
 
-    In comparison, \cite{khamassi2017active} randomly sample policy parameters from a normal distribution and actively
-    update the distributions movements as a function of the rewards earned by recent trajectory samples from a system. A
-    robot interacts with a human and is rewarded by an \emph{engagement} metric. This implementation actively varies the
+    In comparison, \cite{khamassi2017active} randomly samples policy parameters from normal distributions and actively
+    updates the distribution's moments as a function of the rewards earned by recent trajectory samples from a system. A
+    robot interacts with a human and is rewarded by an engagement metric. This implementation actively varies the
     distribution of policies that generate the trajectories to converge to the most rewarding policy, but the mechanism
     to control this active update is still heuristically defined.
 
     A more rigorous application of active learning is applied to a \ac{slam} problem in \cite{martinez2007active}. A
-    robot is tasked to reach a target location and while the loss-function includes is the uncertainty in the robot's
-    final position, it also includes the uncertainty in the locations of several objects in an unknown world. The robot
-    learns policy parameters (waypoints) that lead to a target position and the loss is represented as the trace of the
+    robot is tasked to reach a target location and while the loss-function includes the uncertainty in the robot's final
+    position, it also includes the uncertainty in the locations of several objects in an unknown world. The robot learns
+    policy parameters (waypoints) that lead to a target position and the loss is represented as the trace of the
     covariance matrix on the robot and object location estimates. Additionally, each object's location can only be
-    sensed (corrupted by noise) from a subset of the robot state space. After reaching each waypoint, the robot actively
-    uses a receding horizon planner to select future waypoints. The policy parameters are modeled by \acf{GP}. The
-    distribution that future waypoints are chosen from is proportional to the infill of the \ac{GP} that defines the
-    remaining policy parameters to be chosen. Infill is represented as the amount of the \ac{GP}'s
-    cumulative-density-function that lies below the minimum loss observed in the current trajectory. Therfore, the next
-    waypoints are chosen proportional to the amount of valuable information that can be gained about object and robot
-    locations.
+    sensed (corrupted by noise) from a subset of the state space. After reaching each waypoint, the robot actively uses
+    a receding horizon planner to select future waypoints. The policy parameters are modeled by \acf{GP}. The
+    distribution that future waypoints are chosen from is proportional to the infill of the \ac{GP}. Infill is the
+    amount of the \ac{GP}'s cumulative-density-function that lies below the minimum loss observed in the current
+    trajectory. Therfore, the next waypoints are chosen proportional to the amount of valuable information that can be
+    gained about object and robot locations.
 
-    Finally, \cite{akiyama2010efficient} apply the \ac{lspi} and active-learning to a robot learning to hit a ball with
-    a bat. The derivation is motivated by sample efficiency, especially for cases when gathering trajectories is cheap,
-    but computing rewards for trajectories is expensive. The authors provide a consistent estimator of reward error, the
-    true-reward less the expected-reward generated by a trajectory. They assume that, given their feature selection,
-    there are optimal parameters that can represent the optimal \emph{Q}-function. First, policies are sampled, and for
-    each policy, a set of trajectories are generated without evaluating a reward. The consistent estimator of reward
-    error is the trace of the empirical (importance weighted) covariance of the expected discounted features over all
-    sampled trajectories, and the policy that minimizes this loss is used to gather rewarded-trajectories; this policy
-    is used to try to hit the ball. This \emph{active} synthesis step is repeated after new (unrewarded) trajectories
-    are gathered, and used as the basis for importance weighting, but it is not used for sampling the trajectories so
-    the collection of trajectories remains statistically independent. So, this implementation actively \emph{weights}
-    sampled trajectories to eventually learn an optimal policy.
+    Finally, \cite{akiyama2010efficient} apply the \ac{lspi} to a robot that actively learns to hit a ball with a bat.
+    The derivation is motivated by sample efficiency, especially for cases when gathering trajectories is cheap, but
+    computing the rewards for trajectories is expensive. They assume that, given their feature selection, there are
+    optimal parameters that can represent the optimal \emph{Q}-function. The authors provide a consistent estimator of
+    reward error, the true-reward less the expected-reward generated by a trajectory. In the learning procedure, first,
+    policies are sampled. For each policy, a set of trajectories are generated without evaluating a reward. The
+    consistent estimator of reward error is the trace of the empirical (importance weighted) covariance of the expected
+    discounted features over all sampled trajectories, and the policy that minimizes this loss is used to gather
+    rewarded-trajectories; this policy is used to try to hit the ball. This \emph{active} synthesis step is repeated
+    after new (unrewarded) trajectories are gathered, and used as the basis for importance weighting. Since the sampled
+    trajectories are not a function of the synthesized policies used to batting, the collection of trajectories remains
+    statistically independent. So, this implementation actively \emph{weights} sampled trajectories to eventually learn
+    an optimal policy.
 
     The key tenant of (most) active learning algorithms is determining what is unknown in a model and adjusting the
     policy such that some measure of the unknown is minimized. This helps active learning algorithms improve sample
